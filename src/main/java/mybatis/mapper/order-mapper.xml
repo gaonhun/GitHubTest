@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="order">
+
+	<!-- 주문 내역 검색 -->
+	<select id="orderSearch" resultType="K7_ORDER_HEADER_OMS" parameterType="java.util.HashMap">
+		SELECT
+			RN,
+			ORDER_RE_NO,
+			ORDER_CH_NO,
+			STO_CD,
+			STO_NM,
+			ORDER_STATE,
+			ORDER_CH_NM,
+			ORDER_TYPE,
+			PAY_AMT,
+			DLV_AMT,
+			DIS_AMT,
+			NET_AMT,
+			TOT_AMT,
+			LAND_ADDR,
+			LAND_ADDR_DT,
+			ROAD_ADDR,
+			ROAD_ADDR_DT,
+			MEM_PHONE,
+			SAFE_MEM_PHONE,
+			DLV_CH_NM,
+			DLV_STATE,
+			REG_DATE,
+			MDF_DATE,
+			ORDER_CH_CD
+		FROM(
+			SELECT
+				ORDER_RE_NO,
+				ORDER_CH_NO,
+				STO_CD,
+				STO_NM,
+				ORDER_STATE,
+				ORDER_CH_NM,
+				ORDER_TYPE,
+				PAY_AMT,
+				DLV_AMT,
+				DIS_AMT,
+				NET_AMT,
+				TOT_AMT,
+				LAND_ADDR,
+				LAND_ADDR_DT,
+				ROAD_ADDR,
+				ROAD_ADDR_DT,
+				MEM_PHONE,
+				SAFE_MEM_PHONE,
+				DLV_CH_NM,
+				DLV_STATE,
+				REG_DATE,
+				MDF_DATE,
+				ORDER_CH_CD,
+				ROWNUM RN
+			FROM(
+				SELECT
+					NVL(A.ORDER_RE_NO,'') ORDER_RE_NO, -- 주문번호
+					NVL(A.ORDER_CH_NO,'') ORDER_CH_NO, -- 주문번호
+					NVL(A.STO_CD, ' ') STO_CD, -- 매장코드
+					NVL(B.CPN_NM,' ') STO_NM, -- 매장명
+					NVL(C.DEFINITION_NM,' ') ORDER_STATE, -- AF 주문상태코드
+					NVL(D.CPN_NM,' ') ORDER_CH_NM, -- 주문채널사명
+					NVL(E.DEFINITION_NM,' ') ORDER_TYPE, -- AC 주문타입코드
+					NVL(A.TOT_AMT-A.DIS_AMT, 0) PAY_AMT, -- 결제금액
+					NVL(A.DLV_AMT, 0) DLV_AMT, -- 배달비
+					NVL(A.DIS_AMT, 0) DIS_AMT, -- 할인금액
+					NVL(A.NET_AMT, 0) NET_AMT, -- 순 매출액
+					NVL(A.TOT_AMT, 0) TOT_AMT, -- 총 매출액
+					NVL(A.LAND_ADDR,' ') LAND_ADDR, -- 지번 주소
+					NVL(A.LAND_ADDR_DT,' ') LAND_ADDR_DT, -- 지번 상세 주소
+					NVL(A.ROAD_ADDR,' ') ROAD_ADDR, -- 지번 주소
+					NVL(A.ROAD_ADDR_DT,' ') ROAD_ADDR_DT, -- 지번 상세 주소
+					NVL(A.MEM_PHONE,' ') MEM_PHONE, -- 고객 전화번호
+					NVL(A.SAFE_MEM_PHONE,' ') SAFE_MEM_PHONE, -- 고객 안심번호
+					NVL(F.CPN_NM,' ') DLV_CH_NM, -- 배달사명
+					NVL(G.DEFINITION_NM,' ') DLV_STATE, -- 배달 대행 상태
+					NVL(A.REG_DATE,'') REG_DATE, -- 등록일시
+					NVL(A.MDF_DATE,'') MDF_DATE, -- 수정일시
+					NVL(A.ORDER_CH_CD, '') ORDER_CH_CD -- 채널사 코드
+				FROM K7_ORDER_HEADER_OMS A
+				INNER JOIN K7_COMPANY_MASTER_OMS B ON B.CPN_CD = A.STO_CD
+				LEFT OUTER JOIN K7_REFERENCE_CODE_OMS C ON C.DEFINITION_CD = A.ORDER_STATE AND C.GROUP_CD = 'AE'
+				INNER JOIN K7_COMPANY_MASTER_OMS D ON D.CPN_CD = A.ORDER_CH_CD
+				<if test='occd!=null and !occd.equals("")'>
+			    	AND D.CPN_CD = #{occd}
+				</if>
+				LEFT OUTER JOIN K7_REFERENCE_CODE_OMS E ON E.DEFINITION_CD = A.ORDER_TYPE AND E.GROUP_CD = 'AC'
+				LEFT OUTER JOIN (
+					SELECT A.CPN_NM, B.ORDER_RE_NO, B.DLV_TIME FROM K7_COMPANY_MASTER_OMS A 
+					LEFT OUTER JOIN K7_ORDER_DELIVERY_INFO_OMS B ON B.DLV_CH_CD = A.CPN_CD
+				) F ON F.ORDER_RE_NO = A.ORDER_RE_NO
+				LEFT OUTER JOIN (
+					SELECT A.DEFINITION_NM, B.ORDER_RE_NO FROM K7_REFERENCE_CODE_OMS A 
+					LEFT OUTER JOIN K7_ORDER_DELIVERY_INFO_OMS B ON B.DLV_STATE = A.DEFINITION_CD AND GROUP_CD = 'AD'
+				) G ON G.ORDER_RE_NO = A.ORDER_RE_NO
+				<![CDATA[
+					WHERE to_char(A.REG_DATE,'YYYYMMDD') >= #{sdate} AND to_char(A.REG_DATE,'YYYYMMDD') <= #{edate} 
+				]]>
+				<if test='scd!=null and !scd.equals("")'>
+					AND A.STO_CD = #{scd}
+				</if>
+				<if test='ono!=null and !ono.equals("")'>
+			    	AND A.ORDER_RE_NO LIKE '%'||#{ono}
+				</if>
+				<if test='chono!=null and !chono.equals("")'>
+			    	AND A.ORDER_CH_NO LIKE '%'||#{chono}
+				</if>
+				ORDER BY REG_DATE DESC
+			)                    
+			<![CDATA[ WHERE ROWNUM <= #{cri.pageNum} * #{cri.amount} ]]>
+		)
+		<![CDATA[ WHERE RN > (#{cri.pageNum}-1) * #{cri.amount} ]]> 
+	</select>
+
+	<!-- =========== DETAIL 0301 =========== -->
+
+	<!-- 주문 상세 정보 -->
+	<select id="orderDetail" resultType="K7_ORDER_HEADER_OMS" parameterType="K7_ORDER_HEADER_OMS">
+		SELECT 
+			A.ORDER_RE_NO,
+			A.ORDER_CH_NO,
+			A.ORDER_CH_CD,
+			A.ORDER_DATE,
+			A.STO_CD,
+			B.CPN_NM AS STO_NM,
+			C.DEFINITION_NM AS ORDER_STATE, 
+			D.CPN_NM AS ORDER_CH_NM, 
+			F.CPN_NM AS DLV_CH_NM,
+			E.DEFINITION_NM AS ORDER_TYPE,
+			A.IS_PREPAID,
+			A.DIS_TYPE_NM,
+			A.TOT_AMT-A.DIS_AMT AS PAY_AMT,
+			A.DLV_AMT,
+			A.DIS_AMT,
+			A.NET_AMT,
+			A.TOT_AMT,
+			A.LAND_ADDR,
+			A.LAND_ADDR_DT,
+			A.ROAD_ADDR,
+			A.ROAD_ADDR_DT,
+			A.MEM_PHONE,
+			A.SAFE_MEM_PHONE,
+			G.DEFINITION_NM AS DLV_STATE,
+			F.DLV_DISTANCE,
+			F.DLV_TIME,
+			A.REQ_MSG, 
+			A.RESERVE_DATE,
+			A.REG_DATE,
+			A.MDF_DATE
+		FROM K7_ORDER_HEADER_OMS A
+		INNER JOIN K7_COMPANY_MASTER_OMS B ON B.CPN_CD = A.STO_CD
+		LEFT OUTER JOIN K7_REFERENCE_CODE_OMS C ON C.DEFINITION_CD = A.ORDER_STATE AND C.GROUP_CD = 'AE'
+		INNER JOIN K7_COMPANY_MASTER_OMS D ON D.CPN_CD = A.ORDER_CH_CD AND D.CPN_CD = #{ORDER_CH_CD}
+		LEFT OUTER JOIN K7_REFERENCE_CODE_OMS E ON E.DEFINITION_CD = A.ORDER_TYPE AND E.GROUP_CD = 'AC'
+		LEFT OUTER JOIN (
+			SELECT A.CPN_NM, B.ORDER_RE_NO, B.DLV_TIME, B.DLV_DISTANCE FROM K7_COMPANY_MASTER_OMS A 
+			INNER JOIN K7_ORDER_DELIVERY_INFO_OMS B ON B.DLV_CH_CD = A.CPN_CD
+		) F ON F.ORDER_RE_NO = A.ORDER_RE_NO
+		LEFT OUTER JOIN (
+			SELECT A.DEFINITION_NM, B.ORDER_RE_NO FROM K7_REFERENCE_CODE_OMS A 
+			INNER JOIN K7_ORDER_DELIVERY_INFO_OMS B ON B.DLV_STATE = A.DEFINITION_CD AND GROUP_CD = 'AD'
+		) G ON G.ORDER_RE_NO = A.ORDER_RE_NO
+		WHERE A.ORDER_RE_NO = #{ORDER_RE_NO} 
+		AND A.STO_CD = #{STO_CD} 
+		AND A.ORDER_CH_CD = #{ORDER_CH_CD}
+	</select>
+
+	<!-- 주문 메뉴 정보 -->
+	<select id="orderMenu" resultType="K7_ORDER_MENU_OMS" parameterType="K7_ORDER_HEADER_OMS">
+		SELECT 
+			ORDER_RE_NO,
+			MENU_CD,
+			MENU_NM,
+			QTY,
+			PRICE,
+			AMOUNT,
+			MENU_CD_SEQ 
+		FROM K7_ORDER_MENU_OMS 
+		WHERE ORDER_RE_NO = #{ORDER_RE_NO}
+		ORDER BY MENU_CD_SEQ
+	</select>
+
+	<select id="getOrderMenuItem" resultType="K7_ORDER_OPTION_ITEM_OMS" parameterType="java.util.HashMap">
+		SELECT
+			ORDER_RE_NO,
+			MENU_CD,
+			ITEM_CD,
+			ITEM_NM,
+			QTY,
+			PRICE,
+			AMOUNT,
+			MENU_CD_SEQ,
+			ITEM_CD_SEQ
+		FROM K7_ORDER_OPTION_ITEM_OMS
+		WHERE ORDER_RE_NO = #{ORDER_RE_NO} AND MENU_CD = #{MENU_CD} AND MENU_CD_SEQ = #{MENU_CD_SEQ}
+		ORDER BY MENU_CD_SEQ DESC, ITEM_CD_SEQ DESC
+	</select>
+
+	<!-- 주문 이력 정보 -->
+	<select id="orderHistory" resultType="K7_ORDER_HISTORY_OMS" parameterType="K7_ORDER_HEADER_OMS">
+		SELECT 
+			A.HISTORY_ID,
+			A.ORDER_RE_NO, 
+			B.DEFINITION_NM AS HISTORY_TYPE, 
+			C.DEFINITION_NM AS ORDER_STATE, 
+			D.DEFINITION_NM AS DELIVERY_STATE, 
+			A.STATUS_CD, 
+			A.STATUS_MSG,
+			A.REG_USER_CD,
+			E.USER_NM AS REG_USER_NM,
+			A.REG_DATE 
+		FROM K7_ORDER_HISTORY_OMS A
+		LEFT OUTER JOIN K7_REFERENCE_CODE_OMS B ON B.DEFINITION_CD = A.HISTORY_TYPE AND B.GROUP_CD = 'AF'
+		LEFT OUTER JOIN K7_REFERENCE_CODE_OMS C ON C.DEFINITION_CD = A.ORDER_STATE AND C.GROUP_CD = 'AE'
+		LEFT OUTER JOIN K7_REFERENCE_CODE_OMS D ON D.DEFINITION_CD = A.DELIVERY_STATE AND D.GROUP_CD = 'AD'
+		LEFT OUTER JOIN K7_USER_ACCOUNT_OMS E ON E.USER_CD = A.REG_USER_CD
+		WHERE A.ORDER_RE_NO = #{ORDER_RE_NO}
+		ORDER BY A.HISTORY_ID DESC
+	</select>
+	
+	<!-- Paging 처리 위해 게시글 개수 가져오기 -->
+	
+	<!-- 주문 정보 총 게시글 개수 확인 -->
+	<select id="getSearchOrderTotal" resultType="int" parameterType="java.util.HashMap">
+		SELECT
+			COUNT(*)
+		FROM K7_ORDER_HEADER_OMS A
+		INNER JOIN K7_COMPANY_MASTER_OMS B ON B.CPN_CD = A.STO_CD
+		LEFT OUTER JOIN K7_REFERENCE_CODE_OMS C ON C.DEFINITION_CD = A.ORDER_STATE AND C.GROUP_CD = 'AE'
+		INNER JOIN K7_COMPANY_MASTER_OMS D ON D.CPN_CD = A.ORDER_CH_CD
+		<if test='occd!=null and !occd.equals("")'>
+			AND D.CPN_CD = #{occd}
+		</if>
+		LEFT OUTER JOIN K7_REFERENCE_CODE_OMS E ON E.DEFINITION_CD = A.ORDER_TYPE AND E.GROUP_CD = 'AC'
+		LEFT OUTER JOIN (
+			SELECT A.CPN_NM, B.ORDER_RE_NO, B.DLV_TIME FROM K7_COMPANY_MASTER_OMS A 
+			LEFT OUTER JOIN K7_ORDER_DELIVERY_INFO_OMS B ON B.DLV_CH_CD = A.CPN_CD
+		) F ON F.ORDER_RE_NO = A.ORDER_RE_NO
+		LEFT OUTER JOIN (
+			SELECT A.DEFINITION_NM, B.ORDER_RE_NO FROM K7_REFERENCE_CODE_OMS A 
+			LEFT OUTER JOIN K7_ORDER_DELIVERY_INFO_OMS B ON B.DLV_STATE = A.DEFINITION_CD AND GROUP_CD = 'AD'
+		) G ON G.ORDER_RE_NO = A.ORDER_RE_NO
+		<![CDATA[
+			WHERE to_char(A.REG_DATE,'YYYYMMDD') >= #{sdate} AND to_char(A.REG_DATE,'YYYYMMDD') <= #{edate} 
+		]]>
+		<if test='scd!=null and !scd.equals("")'>
+			AND A.STO_CD = #{scd}
+		</if>
+		<if test='ono!=null and !ono.equals("")'>
+			AND A.ORDER_RE_NO LIKE '%'||#{ono}
+		</if>
+		<if test='chono!=null and !chono.equals("")'>
+			AND A.ORDER_CH_NO LIKE '%'||#{chono}
+		</if>
+	</select>
+</mapper>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="product">
+
+	<select id="productSearch" resultType="K7_MENU_MASTER_OMS" parameterType="java.util.HashMap">
+		SELECT
+			MENU_CD,
+			MENU_NM,
+			PRICE,
+			MENU_STATE,
+			MENU_STATE_MDF_DATE,
+			CTGR_NM,
+			REG_USER_NM,
+			REG_DATE,
+			MDF_USER_NM,
+			MDF_DATE,
+			RN
+		FROM(
+			SELECT
+				MENU_CD,
+				MENU_NM,
+				PRICE,
+				MENU_STATE,
+				MENU_STATE_MDF_DATE,
+				CTGR_NM,
+				REG_USER_NM,
+				REG_DATE,
+				MDF_USER_NM,
+				MDF_DATE,
+				ROWNUM RN		
+			FROM(
+				SELECT 
+					NVL(A.MENU_CD, ' ') MENU_CD, 
+					NVL(A.MENU_NM, ' ') MENU_NM,
+					NVL(A.PRICE, 0) PRICE,
+					NVL(B.DEFINITION_NM, ' ') MENU_STATE,
+					NVL(C.CTGR_NM, ' ') CTGR_NM,
+					MENU_STATE_MDF_DATE,
+					NVL(D.USER_NM, ' ') REG_USER_NM,
+					A.REG_DATE,
+					NVL(E.USER_NM, ' ') MDF_USER_NM,
+					A.MDF_DATE 
+				FROM K7_MENU_MASTER_OMS A
+				INNER JOIN K7_REFERENCE_CODE_OMS B ON B.DEFINITION_CD = A.MENU_STATE		
+				AND B.GROUP_CD = 'AJ'
+				<if test='etyp!=null  and !etyp.equals("")'>
+			    	AND B.DEFINITION_CD = #{etyp}
+				</if>
+				INNER JOIN K7_CATEGORY_MASTER_OMS C ON C.CTGR_CD = A.CTGR_CD
+				<if test='sinp!=null and !sinp.equals("")'>
+			    	AND C.CTGR_CD = #{sinp}
+				</if>
+				LEFT OUTER JOIN K7_USER_ACCOUNT_OMS D ON (A.REG_USER_CD = D.USER_CD)
+				LEFT OUTER JOIN K7_USER_ACCOUNT_OMS E ON (A.MDF_USER_CD = E.USER_CD)
+				<if test='pcd!=null and !pcd.equals("")'>
+			    	WHERE A.MENU_CD = #{pcd}
+				</if>	
+				<!-- ORDER BY REGEXP_REPLACE(MENU_NM, '[0-9]'), to_number(REGEXP_REPLACE(MENU_NM, '[^0-9]')) -->
+					ORDER BY C.SEQ ASC, A.SEQUENCE ASC
+				)
+			<![CDATA[ WHERE ROWNUM <= #{cri.pageNum} * #{cri.amount} ]]>
+			)
+		<![CDATA[ WHERE RN > (#{cri.pageNum}-1) * #{cri.amount} ]]>  
+	</select>
+	
+	<select id="GetPolicyCode" resultType="K7_REFERENCE_CODE_OMS">
+		SELECT * FROM K7_REFERENCE_CODE_OMS WHERE GROUP_CD = 'AJ'
+	</select>
+	
+	<select id="GetCategory" resultType="K7_CATEGORY_MASTER_OMS">
+		SELECT CTGR_NM, CTGR_CD
+        FROM K7_CATEGORY_MASTER_OMS
+        WHERE CTGR_TYPE = 'Menu'
+        ORDER BY SEQ ASC
+	</select>
+
+<!-- ##########################################Detail 0201########################################## -->
+	<!-- 상품 마스터 정보 -->
+	<select id="ProductMasterDetail" resultType="K7_MENU_MASTER_OMS">
+		SELECT A.MENU_CD,
+			   A.MENU_NM, 
+			   A.MENU_STATE,
+			   B.DEFINITION_NM AS MENU_STATE_NM,
+			   A.CTGR_CD,
+			   C.CTGR_NM, 
+			   A.PRICE, 
+			   A."SEQUENCE", 
+			   A.IMAGE_URL,
+			   A.NUTRITION_INFO_URL,
+			   D.USER_NM AS REG_USER_NM,
+			   A.REG_DATE, 
+			   E.USER_NM AS MDF_USER_NM,
+			   A.MDF_DATE, 
+			   A.MENU_DESC, 
+			   E.LINK_MENU_CD
+		FROM K7_MENU_MASTER_OMS A
+		INNER JOIN K7_REFERENCE_CODE_OMS B ON B.DEFINITION_CD = A.MENU_STATE
+		AND B.GROUP_CD = 'AJ'
+		LEFT OUTER JOIN K7_CATEGORY_MASTER_OMS C ON A.CTGR_CD = C.CTGR_CD
+		LEFT OUTER JOIN (SELECT A.MENU_CD,
+			SUBSTR(
+				XMLAGG(
+					XMLELEMENT(COL ,', ', A.OPTION_ITEM_CD) ORDER BY A.OPTION_ITEM_CD
+				).EXTRACT('//text()').GETSTRINGVAL(), 2
+			) AS LINK_MENU_CD
+			FROM K7_OPTION_ITEM_OMS A
+			GROUP BY A.MENU_CD) E ON E.MENU_CD = A.MENU_CD
+		LEFT OUTER JOIN K7_USER_ACCOUNT_OMS D ON (D.USER_CD = A.REG_USER_CD)
+		LEFT OUTER JOIN K7_USER_ACCOUNT_OMS E ON (E.USER_CD = A.MDF_USER_CD)
+		WHERE A.MENU_CD = #{plucd}
+	</select>
+	
+	<!-- 행사상품 옵션 정보 -->
+	<select id="ProductOptionDetail" resultType="K7_MENU_OPTION_OMS"> 
+		 SELECT OPTION_CD, OPTION_NM, 
+			   IS_REQUIRED, SEQUENCE, 
+			   IS_MULTI_SELECTABLE, MIN_SELECT_COUNT, 
+			   MAX_SELECT_COUNT, IS_COUNTABLE 
+		FROM K7_MENU_OPTION_OMS WHERE MENU_CD = #{plucd}
+	</select>
+	
+	<select id="getProductItem" resultType="K7_OPTION_ITEM_OMS">
+		SELECT ITEM_CD, ITEM_NM, PRICE, SEQUENCE FROM K7_OPTION_ITEM_OMS WHERE OPTION_CD = #{opcd} ORDER BY SEQUENCE DESC
+	</select>
+
+
+	<!-- 매장 재고 정보 -->
+	<select id="StoreProductDetail" resultType="K7_STORE_MENU_OMS" parameterType="java.util.HashMap">
+		SELECT STO_CD, STO_STOCK_QTY, STOCK_MDF_DATE FROM K7_STORE_MENU_OMS
+		WHERE STO_CD = #{scd}
+		AND MENU_CD = #{plucd}
+	</select>
+	
+	
+	<!-- Paging 처리 위해 게시글 개수 가져오기 -->
+	
+	<!-- 상품 검색 정보 총 게시글 개수 확인 -->
+	<select id="getSearchProductTotal" resultType="int" parameterType="java.util.HashMap">
+		SELECT 
+			COUNT(*)
+		FROM K7_MENU_MASTER_OMS A
+		INNER JOIN K7_REFERENCE_CODE_OMS B ON B.DEFINITION_CD = A.MENU_STATE		
+		AND B.GROUP_CD = 'AJ'
+		<if test='etyp!=null  and !etyp.equals("")'>
+	    	AND B.DEFINITION_CD = #{etyp}
+		</if>
+		INNER JOIN K7_CATEGORY_MASTER_OMS C ON C.CTGR_CD = A.CTGR_CD
+		<if test='sinp!=null and !sinp.equals("")'>
+	    	AND C.CTGR_CD = #{sinp}
+		</if>
+		LEFT OUTER JOIN K7_USER_ACCOUNT_OMS D ON (A.REG_USER_CD = D.USER_CD)
+		LEFT OUTER JOIN K7_USER_ACCOUNT_OMS E ON (A.MDF_USER_CD = E.USER_CD)
+		<if test='pcd!=null and !pcd.equals("")'>
+	    	WHERE A.MENU_CD = #{pcd}
+		</if>
+	</select>
+	
+	<select id="getCategoryCode" resultType="String" parameterType="String">
+		SELECT CTGR_CD FROM K7_CATEGORY_MASTER_OMS WHERE CTGR_NM = #{ctgrNM}
+	</select>
+	
+</mapper>

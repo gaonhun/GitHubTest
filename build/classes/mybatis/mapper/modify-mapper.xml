@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="modify">
+	<update id="setUpdateSub01_01detail" parameterType="java.util.HashMap">
+		{CALL
+	        DECLARE
+			BEGIN
+			<if test='comp_master!=null and !comp_master.equals("")'>
+				UPDATE 
+			    	K7_COMPANY_MASTER_OMS
+				SET
+				 	CPN_NM = #{comp_master.CPN_NM},
+				 	CEO_NM = #{comp_master.CEO_NM}, 
+				 	CPN_TEL = REPLACE(#{comp_master.CPN_TEL}, '-', ''),
+				    MNG_HPNO = REPLACE(#{comp_master.MNG_HPNO}, '-', ''),
+				    HPNO = REPLACE(#{comp_master.HPNO}, '-', ''),
+				    EMAIL = #{comp_master.EMAIL},
+				    MNG_NM = #{comp_master.MNG_NM},
+				    FC_NM = #{comp_master.FC_NM}, 
+				 	CPN_ADDR = #{comp_master.CPN_ADDR}, 
+				 	CPN_ROAD_ADDR = #{comp_master.CPN_ROAD_ADDR},
+				 	CPN_ADDR_DT = #{comp_master.CPN_ADDR_DT}, 
+				 	CPN_BIZ_NO = REPLACE(#{comp_master.CPN_BIZ_NO}, '-', ''),
+					CPN_IMAGE_URL = #{comp_master.CPN_IMAGE_URL},
+					CPN_DESC = #{comp_master.CPN_DESC},
+					MEMO = #{comp_master.MEMO},
+					OPN_DT = REPLACE(#{comp_master.OPN_DT}, '-', ''),
+					CPN_BIZ_TYPE = #{comp_master.CPN_BIZ_TYPE},
+					IN_APP = #{comp_master.IN_APP},
+					<if test='comp_master.CPN_STATE!=null and !comp_master.CPN_STATE.equals("")'>
+						CPN_STATE = #{comp_master.CPN_STATE},
+						STATE_MDF_DATE = SYSDATE,
+					</if>
+					MDF_USER_CD = #{mdf_user_cd},
+					MDF_DATE = SYSDATE
+				WHERE CPN_CD = #{cpn_cd};
+			</if>
+			<if test='sto_oper!=null and !sto_oper.equals("")'>
+			    UPDATE 
+			    	K7_STORE_OPERATION_OMS
+				SET
+					DAY_START_TIME = #{sto_oper.DAY_START_TIME}, 
+					DAY_END_TIME = #{sto_oper.DAY_END_TIME},  
+					DELIVERY_PRICE = REPLACE(#{sto_oper.DELIVERY_PRICE}, ',', ''),
+					ESTIMATED_DELIVERY_TIME = #{sto_oper.ESTIMATED_DELIVERY_TIME},
+					MAXIMUM_ORDER_PRICE = REPLACE(#{sto_oper.MAXIMUM_ORDER_PRICE}, ',', ''),  
+					MINIMUM_ORDER_PRICE = REPLACE(#{sto_oper.MINIMUM_ORDER_PRICE}, ',', ''),  
+					WEEKEND_START_TIME = #{sto_oper.WEEKEND_START_TIME},  
+					WEEKEND_END_TIME = #{sto_oper.WEEKEND_END_TIME}, 
+					HOLIDAY_START_TIME = #{sto_oper.HOLIDAY_START_TIME},  
+					HOLIDAY_END_TIME = #{sto_oper.HOLIDAY_END_TIME},
+					LOC_LAT = #{sto_oper.LOC_LAT},
+					LOC_LONG = #{sto_oper.LOC_LONG},
+					ACC_HOLDER = #{sto_oper.ACC_HOLDER},
+					BANK_NM = #{sto_oper.BANK_NM},
+					ACC_NUM = REPLACE(#{sto_oper.ACC_NUM}, '-', ''),
+					STOP_START_DAY = REPLACE(#{sto_oper.STOP_START_DAY}, '-', ''),
+					STOP_END_DAY = REPLACE(#{sto_oper.STOP_END_DAY}, '-', ''),
+					DELIVERY_CH_CD = #{sto_oper.DELIVERY_CH_CD},
+					BREAK_TIME = #{sto_oper.BREAK_TIME}
+			     WHERE STO_CD = #{cpn_cd};
+			</if>
+			<if test='comp_master!=null and !comp_master.equals("")'>
+				UPDATE 
+			    	K7_COMPANY_MASTER_GDC
+				SET
+				 	CPN_NM = #{comp_master.CPN_NM},
+				 	CEO_NM = #{comp_master.CEO_NM}, 
+				 	CPN_TEL = REPLACE(#{comp_master.CPN_TEL}, '-', ''),
+				    MNG_HPNO = REPLACE(#{comp_master.MNG_HPNO}, '-', ''),
+				    HPNO = REPLACE(#{comp_master.HPNO}, '-', ''),
+				    EMAIL = #{comp_master.EMAIL}, 
+				    MNG_NM = #{comp_master.MNG_NM},
+			    	FC_NM = #{comp_master.FC_NM}, 
+				 	CPN_ADDR = #{comp_master.CPN_ADDR}, 
+				 	CPN_ROAD_ADDR = #{comp_master.CPN_ROAD_ADDR},
+				 	CPN_ADDR_DT = #{comp_master.CPN_ADDR_DT}, 
+				 	CPN_BIZ_NO = REPLACE(#{comp_master.CPN_BIZ_NO}, '-', ''),
+					CPN_IMAGE_URL = #{comp_master.CPN_IMAGE_URL},
+					CPN_DESC = #{comp_master.CPN_DESC},
+					MEMO = #{comp_master.MEMO},
+					OPN_DT = REPLACE(#{comp_master.OPN_DT}, '-', ''),
+					CPN_BIZ_TYPE = #{comp_master.CPN_BIZ_TYPE},
+					IN_APP = #{comp_master.IN_APP},
+					<if test='comp_master.CPN_STATE!=null and !comp_master.CPN_STATE.equals("")'>
+						CPN_STATE = #{comp_master.CPN_STATE},
+						STATE_MDF_DATE = SYSDATE,
+					</if>
+					MDF_USER_CD = #{mdf_user_cd},
+					MDF_DATE = SYSDATE
+				WHERE CPN_CD = #{cpn_cd};
+			</if>
+			<if test='sto_oper!=null and !sto_oper.equals("")'>
+			    UPDATE 
+			    	K7_STORE_OPERATION_GDC
+				SET
+					DAY_START_TIME = #{sto_oper.DAY_START_TIME}, 
+					DAY_END_TIME = #{sto_oper.DAY_END_TIME},  
+					DELIVERY_PRICE = REPLACE(#{sto_oper.DELIVERY_PRICE}, ',', ''),
+					ESTIMATED_DELIVERY_TIME = #{sto_oper.ESTIMATED_DELIVERY_TIME},
+					MAXIMUM_ORDER_PRICE = REPLACE(#{sto_oper.MAXIMUM_ORDER_PRICE}, ',', ''),  
+					MINIMUM_ORDER_PRICE = REPLACE(#{sto_oper.MINIMUM_ORDER_PRICE}, ',', ''),  
+					WEEKEND_START_TIME = #{sto_oper.WEEKEND_START_TIME},  
+					WEEKEND_END_TIME = #{sto_oper.WEEKEND_END_TIME}, 
+					HOLIDAY_START_TIME = #{sto_oper.HOLIDAY_START_TIME},  
+					HOLIDAY_END_TIME = #{sto_oper.HOLIDAY_END_TIME},
+					LOC_LAT = #{sto_oper.LOC_LAT},
+					LOC_LONG = #{sto_oper.LOC_LONG},
+					ACC_HOLDER = #{sto_oper.ACC_HOLDER},
+					BANK_NM = #{sto_oper.BANK_NM},
+					ACC_NUM = REPLACE(#{sto_oper.ACC_NUM}, '-', ''),
+					STOP_START_DAY = REPLACE(#{sto_oper.STOP_START_DAY}, '-', ''),
+					STOP_END_DAY = REPLACE(#{sto_oper.STOP_END_DAY}, '-', ''),
+					DELIVERY_CH_CD = #{sto_oper.DELIVERY_CH_CD},
+					BREAK_TIME = #{sto_oper.BREAK_TIME}
+			     WHERE STO_CD = #{cpn_cd};
+			</if>
+			END
+		}
+	</update>
+	
+	<update id="setChannelStoreOper" parameterType="java.util.HashMap">
+		<if test='chst_op!=null and !chst_op.equals("")'>
+			{
+			CALL
+		        DECLARE
+				BEGIN
+				<foreach collection="chst_op" item="item">
+				    UPDATE 
+				    	K7_CHANNEL_STORE_OPERATION_OMS
+					SET
+						CH_STATE = #{item.CH_STATE}, 
+						CH_SEND_FLAG = #{item.CH_SEND_FLAG},
+						MDF_USER_CD = #{MDF_USER_CD},
+						MDF_DATE = SYSDATE
+					WHERE CH_CD = #{item.CH_CD} AND STO_CD = #{item.STO_CD};
+				</foreach>
+			END
+			}
+		</if>
+	</update>
+
+	<update id="setUpdateSub02_01detail" parameterType="java.util.HashMap">
+		{CALL
+	        DECLARE
+			BEGIN
+			<if test='menu_master!=null and !menu_master.equals("")'>
+				UPDATE 
+			    	K7_MENU_MASTER_OMS
+				SET
+				 	MENU_NM = #{menu_master.MENU_NM}, 
+				 	<if test='menu_master.MENU_STATE!=null and !menu_master.MENU_STATE.equals("")'>
+				 		MENU_STATE = #{menu_master.MENU_STATE},
+				 		MENU_STATE_MDF_DATE = SYSDATE,
+				 	</if>
+				 	<if test='menu_master.CTGR_CD!=null and !menu_master.CTGR_CD.equals("")'>
+			  			CTGR_CD = #{menu_master.CTGR_CD}, 
+			  		</if>
+			  		PRICE = REPLACE(#{menu_master.PRICE}, ',', ''),
+			  		SEQUENCE = #{menu_master.SEQUENCE}, 
+			  		IMAGE_URL = #{menu_master.IMAGE_URL},
+			  		NUTRITION_INFO_URL = #{menu_master.NUTRITION_INFO_URL},
+			  		MDF_USER_CD = #{mdf_user_cd},
+			  		MDF_DATE = SYSDATE, 
+			  		MENU_DESC = #{menu_master.MENU_DESC} 
+			  		<!-- E.LINK_MENU_CD -->
+				WHERE MENU_CD = #{menu_cd};
+				UPDATE 
+			    	K7_MENU_MASTER_GDC
+				SET
+				 	MENU_NM = #{menu_master.MENU_NM}, 
+				 	<if test='menu_master.MENU_STATE!=null and !menu_master.MENU_STATE.equals("")'>
+				 		MENU_STATE = #{menu_master.MENU_STATE},
+				 		MENU_STATE_MDF_DATE = SYSDATE,
+				 	</if>
+				 	<if test='menu_master.CTGR_CD!=null and !menu_master.CTGR_CD.equals("")'>
+			  			CTGR_CD = #{menu_master.CTGR_CD}, 
+			  		</if>
+			  		PRICE = REPLACE(#{menu_master.PRICE}, ',', ''),
+			  		SEQUENCE = #{menu_master.SEQUENCE}, 
+			  		IMAGE_URL = #{menu_master.IMAGE_URL},
+			  		NUTRITION_INFO_URL = #{menu_master.NUTRITION_INFO_URL},
+			  		MDF_USER_CD = #{mdf_user_cd},
+			  		MDF_DATE = SYSDATE, 
+			  		MENU_DESC = #{menu_master.MENU_DESC} 
+			  		<!-- E.LINK_MENU_CD -->
+				WHERE MENU_CD = #{menu_cd};
+			</if>
+			END
+		}
+	</update>
+	
+	<update id="setUpdateChannelData" parameterType="java.util.HashMap">
+		{CALL
+	        DECLARE
+			BEGIN
+				UPDATE 
+			    	K7_COMPANY_MASTER_OMS
+				SET
+				 	CPN_NM = #{comp_master.CPN_NM},
+				 	CEO_NM = #{comp_master.CEO_NM}, 
+				 	CPN_TEL = #{comp_master.CPN_TEL},
+				    MNG_HPNO = REPLACE(#{comp_master.MNG_HPNO}, '-', ''),
+				    HPNO = REPLACE(#{comp_master.HPNO}, '-', ''),
+				    EMAIL = #{comp_master.EMAIL},
+				    MNG_NM = #{comp_master.MNG_NM},
+				    FC_NM = #{comp_master.FC_NM}, 
+				 	CPN_ADDR = #{comp_master.CPN_ADDR}, 
+				 	CPN_ROAD_ADDR = #{comp_master.CPN_ROAD_ADDR},
+				 	CPN_ADDR_DT = #{comp_master.CPN_ADDR_DT}, 
+				 	CPN_BIZ_NO = REPLACE(#{comp_master.CPN_BIZ_NO}, '-', ''),
+					CPN_IMAGE_URL = #{comp_master.CPN_IMAGE_URL},
+					CPN_DESC = #{comp_master.CPN_DESC},
+					MEMO = #{comp_master.MEMO},
+					OPN_DT = REPLACE(#{comp_master.OPN_DT}, '-', ''),
+					K7_LINK_CD = #{comp_master.K7_LINK_CD},
+					CPN_BIZ_TYPE = #{comp_master.CPN_BIZ_TYPE},
+					IN_APP = #{comp_master.IN_APP},
+					<if test='comp_master.CPN_STATE!=null and !comp_master.CPN_STATE.equals("")'>
+						CPN_STATE = #{comp_master.CPN_STATE},
+						STATE_MDF_DATE = SYSDATE,
+					</if>
+					MDF_USER_CD = #{MDF_USER_CD},
+					MDF_DATE = SYSDATE
+				WHERE CPN_CD = #{cpn_cd};
+				UPDATE 
+				   	K7_COMPANY_MASTER_GDC
+				SET
+				 	CPN_NM = #{comp_master.CPN_NM},
+				 	CEO_NM = #{comp_master.CEO_NM}, 
+				 	CPN_TEL = #{comp_master.CPN_TEL},
+				    MNG_HPNO = REPLACE(#{comp_master.MNG_HPNO}, '-', ''),
+				    HPNO = REPLACE(#{comp_master.HPNO}, '-', ''),
+				    EMAIL = #{comp_master.EMAIL}, 
+				    MNG_NM = #{comp_master.MNG_NM},
+				   	FC_NM = #{comp_master.FC_NM}, 
+				 	CPN_ADDR = #{comp_master.CPN_ADDR}, 
+				 	CPN_ROAD_ADDR = #{comp_master.CPN_ROAD_ADDR},
+				 	CPN_ADDR_DT = #{comp_master.CPN_ADDR_DT}, 
+				 	CPN_BIZ_NO = REPLACE(#{comp_master.CPN_BIZ_NO}, '-', ''),
+					CPN_IMAGE_URL = #{comp_master.CPN_IMAGE_URL},
+					CPN_DESC = #{comp_master.CPN_DESC},
+					MEMO = #{comp_master.MEMO},
+					OPN_DT = REPLACE(#{comp_master.OPN_DT}, '-', ''),
+					K7_LINK_CD = #{comp_master.K7_LINK_CD},
+					CPN_BIZ_TYPE = #{comp_master.CPN_BIZ_TYPE},
+					IN_APP = #{comp_master.IN_APP},
+					<if test='comp_master.CPN_STATE!=null and !comp_master.CPN_STATE.equals("")'>
+						CPN_STATE = #{comp_master.CPN_STATE},
+						STATE_MDF_DATE = SYSDATE,
+					</if>
+					MDF_USER_CD = #{MDF_USER_CD},
+					MDF_DATE = SYSDATE
+				WHERE CPN_CD = #{cpn_cd};
+			END
+		}
+	</update>
+</mapper>

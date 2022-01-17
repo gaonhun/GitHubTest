@@ -1,0 +1,161 @@
+.div_header {
+    border: 1px solid #C3C3C3;
+    border-top: 0px;
+    background-color: white;
+    display: block;
+    box-sizing: border-box;
+    height: 54px;
+    line-height: 30px;
+}
+
+.btn_div{
+	height: 100%;
+	float: right;
+}
+
+.main_div {
+    padding: 25px;
+	background-color: white;
+	text-align: left;
+}
+
+.btn_insert {
+	background: #EDEDED;
+	color: #707070;
+	padding: 10px;
+	font-size: 0.8rem;
+	font-weight: bolder;
+	text-align: center;
+	text-decoration: none;
+	border: 1.5px solid #D3D3D3;
+	border-radius: 1px;
+	width: 130px;
+	cursor: pointer;
+	margin: 6px 7px;
+}
+
+.select_box {
+    border: 1px solid #C3C3C3;
+    border-radius: 1px;
+    width: 150px;
+    height: 32px;
+    font-family: inherit;
+    /* 폰트 상속 */
+    font-size: 12px;
+    color: #717171;
+    margin-left: 10px;
+}
+
+
+.btn_save:hover {
+    color: #505050;
+    border: 1.5px solid #c4c4c4;
+    background-color: #D3D3D3;
+    transition: 0.5s;
+}
+
+/*################ 테이블 DIV 부분 ################*/
+td{
+	border: none;
+}
+
+table{
+	border-collapse: collapse;
+    /*table-layout: fixed;*/
+    word-break: break-all;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    width: 0;
+}
+
+#f_table {
+	float: left;
+    width: 700px;
+}
+
+#s_table {
+	float: left;
+    border: none;
+}
+
+th {
+    background-color: #F4F4F4;
+    border: 1px solid #C3C3C3;
+    color: #717171;
+}
+
+.mtitle {
+	font-size: 15px;
+    text-align: left;
+    padding: 8px;
+    padding-left: 25px;
+}
+
+.stitle {
+	width: 150px;
+	font-size: 14px;
+    text-align: center;
+    background-color: white;
+    padding: 5px 10px;
+}
+
+#f_table td {
+    color: #717171;
+    border: 1px solid #C3C3C3;
+    text-align: left;
+    font-size: 14px;
+    padding: 5px;
+    padding-left: 15px;
+    height: 36px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.pd_des {
+    background-color: white;
+    padding: 50px;
+}
+
+.td_btom {
+    height: 66.9vh;
+}
+
+.main_div input {
+    height: 25px;
+    border: none;
+}
+
+.check_font{
+	height: 36px;
+}
+
+input {
+	width: 220px;
+}
+
+input:focus {
+    outline: none;
+}
+
+.em_input{
+	width: 150px;
+}
+
+.select_box{
+	width: 150px;
+}
+
+.addr{
+	width: 200px;
+}
+
+.addr_dt{
+	width: 100px;
+}
+
+#emp{
+	display: inline-block;
+	color: red;
+	
+}

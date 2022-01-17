@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="Channel">
+	<select id="ChannelSearch" resultType="K7_COMPANY_MASTER_OMS" parameterType="java.util.HashMap">
+		SELECT
+			RN,
+			CPN_CD,
+			CPN_BIZ_NO,
+			CPN_NM,
+			CEO_NM,
+			CPN_ADDR,
+			CPN_ADDR_DT,
+			CPN_TEL,
+			EMAIL,
+			CPN_STATE,
+			MNG_NM,
+			MNG_HPNO,
+			K7_LINK_CD,
+			IN_APP,
+			REG_DATE
+		FROM(
+			SELECT
+				CPN_CD,
+				CPN_BIZ_NO,
+				CPN_NM,
+				CEO_NM,
+				CPN_ADDR,
+				CPN_ADDR_DT,
+				CPN_TEL,
+				EMAIL,
+				CPN_STATE,
+				MNG_NM,
+				MNG_HPNO,
+				K7_LINK_CD,
+				IN_APP,
+				REG_DATE,
+				ROWNUM RN
+			FROM(
+				SELECT 
+					NVL(A.CPN_CD,' ') CPN_CD,
+					NVL(A.CPN_BIZ_NO,' ') CPN_BIZ_NO,
+					NVL(A.CPN_NM,' ') CPN_NM,
+					NVL(A.CEO_NM,' ') CEO_NM,
+					NVL(A.CPN_ADDR,' ') CPN_ADDR,
+					NVL(A.CPN_ADDR_DT,' ') CPN_ADDR_DT,
+					NVL(A.CPN_TEL,' ') CPN_TEL,
+					NVL(A.EMAIL,' ') EMAIL,
+					NVL(B.DEFINITION_NM,' ') CPN_STATE,
+					NVL(A.MNG_NM,' ') MNG_NM,
+					NVL(A.MNG_HPNO,' ') MNG_HPNO,
+					NVL(A.K7_LINK_CD,' ') K7_LINK_CD,
+					NVL(A.IN_APP,' ') IN_APP,
+					NVL(A.REG_DATE,'') REG_DATE
+				FROM K7_COMPANY_MASTER_OMS A
+				INNER JOIN K7_REFERENCE_CODE_OMS B 
+				ON B.DEFINITION_CD = A.CPN_STATE AND B.GROUP_CD = 'AG' AND A.CPN_TYPE = #{cpntype}
+				<if test='sst!=null and !sst.equals("")'>
+			    	AND B.DEFINITION_CD IN (#{sst})
+				</if>
+				<if test='cpncd!=null and !cpncd.equals("")'>
+					WHERE A.CPN_CD = #{cpncd}
+				</if>
+				ORDER BY REGEXP_REPLACE(CPN_CD, '[0-9]'), TO_NUMBER(REGEXP_REPLACE(CPN_CD, '[^0-9]'))
+				)
+			<![CDATA[ WHERE ROWNUM <= #{cri.pageNum} * #{cri.amount} ]]>              
+		)
+		<![CDATA[ WHERE RN > (#{cri.pageNum}-1) * #{cri.amount} ]]>   
+	</select>
+	
+	<select id="GetCPNState" resultType="K7_REFERENCE_CODE_OMS">
+		SELECT * FROM K7_REFERENCE_CODE_OMS WHERE GROUP_CD = 'AG' ORDER BY DECODE(DEFINITION_CD, 'Open', 1)
+	</select>	
+	<!-- ##########################################Detail 0101########################################## -->
+	<select id="getCPN_Detail" resultType="K7_COMPANY_MASTER_OMS">
+		 SELECT 
+		 	A.CPN_CD, 
+		 	A.CPN_NM,
+		 	A.CEO_NM, 
+		 	A.CPN_TEL,
+		    A.HPNO,
+		    A.EMAIL, 
+		    B.DEFINITION_NM AS CPN_STATE,
+		 	A.CPN_ADDR, 
+		 	A.CPN_ROAD_ADDR,
+		 	A.CPN_ADDR_DT, 
+		 	A.CPN_BIZ_NO,
+			A.CPN_IMAGE_URL,
+			A.CPN_DESC,
+			A.OPN_DT,
+			A.CPN_BIZ_TYPE,
+			A.MEMO,
+			A.MNG_NM,
+			A.MNG_HPNO,
+			A.FC_NM,
+			A.IN_APP,
+			A.K7_LINK_CD AS LINK_CD,
+			A.STATE_MDF_DATE,
+			C.USER_NM AS REG_USER_NM,
+			A.REG_DATE,
+			D.USER_NM AS MDF_USER_NM,
+			A.MDF_DATE
+		FROM K7_COMPANY_MASTER_OMS A
+		INNER JOIN K7_REFERENCE_CODE_OMS B 
+			ON B.DEFINITION_CD = A.CPN_STATE 
+		    AND B.GROUP_CD = 'AG'
+		LEFT OUTER JOIN K7_USER_ACCOUNT_OMS C ON (A.REG_USER_CD = C.USER_CD)
+		LEFT OUTER JOIN K7_USER_ACCOUNT_OMS D ON (A.MDF_USER_CD = D.USER_CD)
+		WHERE A.CPN_CD  = #{cpncd}
+	</select>
+
+	<!-- Paging 처리 위해 게시글 개수 가져오기 -->
+	<!-- 매장 검색 정보 총 게시글 개수 확인 -->
+	<select id="getOrderChannelTotal" resultType="int" parameterType="java.util.HashMap">
+		SELECT 
+			COUNT(*)
+		FROM K7_COMPANY_MASTER_OMS A
+		INNER JOIN K7_REFERENCE_CODE_OMS B 
+		ON B.DEFINITION_CD = A.CPN_STATE AND B.GROUP_CD = 'AG' AND A.CPN_TYPE = 'Order'
+		<if test='sst!=null and !sst.equals("")'>
+	    	AND B.DEFINITION_CD IN (#{sst})
+		</if>
+		<if test='cpncd!=null and !cpncd.equals("")'>
+			WHERE A.CPN_CD = #{cpncd}
+		</if>
+	</select>
+	
+	<insert id="setInsetChannelData" parameterType="java.util.HashMap">
+		{
+		CALL
+			DECLARE
+			BEGIN	
+			INSERT ALL
+				INTO K7_COMPANY_MASTER_OMS (
+						CPN_CD,
+						CPN_NM,
+						CPN_STATE,
+						CPN_TYPE,
+						CEO_NM,
+						CPN_BIZ_NO,
+						CPN_ADDR,
+						CPN_TEL,
+						CPN_DESC,
+						CPN_IMAGE_URL,
+						MNG_NM,
+						MNG_HPNO,
+						EMAIL,
+						IN_APP,
+						K7_LINK_CD,
+						REG_USER_CD,
+						REG_DATE
+					)
+				VALUES
+					(
+						#{regVal.CPN_CD},
+						#{regVal.CPN_NM},
+						#{regVal.CPN_STATE},
+						#{CPN_TYPE},
+						#{regVal.CEO_NM},
+						REPLACE(#{regVal.CPN_BIZ_NO}, '-', ''),
+						#{regVal.CPN_ADDR},
+						#{regVal.CPN_TEL},
+						#{regVal.CPN_DESC},
+						#{regVal.CPN_IMAGE_URL},
+						#{regVal.MNG_NM},
+						REPLACE(#{regVal.MNG_HPNO}, '-', ''),
+						#{regVal.EMAIL},
+						#{regVal.IN_APP},
+						#{regVal.K7_LINK_CD},
+						#{REG_USER_CD},
+						SYSDATE
+					)
+				INTO K7_COMPANY_MASTER_GDC (
+						CPN_CD,
+						CPN_NM,
+						CPN_STATE,
+						CPN_TYPE,
+						CEO_NM,
+						CPN_BIZ_NO,
+						CPN_ADDR,
+						CPN_TEL,
+						CPN_DESC,
+						CPN_IMAGE_URL,
+						MNG_NM,
+						MNG_HPNO,
+						EMAIL,
+						IN_APP,
+						K7_LINK_CD,
+						REG_USER_CD,
+						REG_DATE
+					)
+				VALUES
+					(
+						#{regVal.CPN_CD},
+						#{regVal.CPN_NM},
+						#{regVal.CPN_STATE},
+						#{CPN_TYPE},
+						#{regVal.CEO_NM},
+						REPLACE(#{regVal.CPN_BIZ_NO}, '-', ''),
+						#{regVal.CPN_ADDR},
+						#{regVal.CPN_TEL},
+						#{regVal.CPN_DESC},
+						#{regVal.CPN_IMAGE_URL},
+						#{regVal.MNG_NM},
+						REPLACE(#{regVal.MNG_HPNO}, '-', ''),
+						#{regVal.EMAIL},
+						#{regVal.IN_APP},
+						#{regVal.K7_LINK_CD},
+						#{REG_USER_CD},
+						SYSDATE
+					)
+				SELECT * FROM DUAL;
+			END
+		}
+	</insert>
+</mapper>

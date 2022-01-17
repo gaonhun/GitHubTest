@@ -1,0 +1,83 @@
+/*####################### 메인 페이지 #########################*/
+.main_div {
+    padding: 25px;
+    border: 1px solid #C3C3C3;
+    border-top: 0px;
+    background-color: white;
+    overflow: auto;
+    height: calc(100vh -  210px);
+    text-align: left;
+}
+
+
+.search_div > p {
+    color: #717171;
+    font-size: 13px;
+    font-weight: bold;
+    display: inline-block;
+    padding: 12px;
+}
+
+.paging {
+	display: inline-block;
+	margin: 0;
+}
+
+.search_box {
+    margin-right: 10px;
+    border: 1.8px solid #C3C3C3;
+    border-radius: 1px;
+    width: 150px;
+    height: 30px;
+    display: inline-block;
+}
+
+.search_box:focus {
+    border-radius: 1px;
+    border: 2px solid #099769;
+    outline: #099769;
+}
+
+.btn_reg {
+    background: #EDEDED;
+	color: #707070;
+	padding: 10px;
+	font-size: 0.8rem;
+	font-weight: bolder;
+	text-align: center;
+	text-decoration: none;
+	border: 1.5px solid #D3D3D3;
+	border-radius: 1px;
+	width: 130px;
+	cursor: pointer;
+	margin: 6px 0px;
+}
+
+.btn_insert:hover,
+.btn_search:hover {
+    color: #505050;
+    border: 1.5px solid #c4c4c4;
+    background-color: #D3D3D3;
+    transition: 0.5s;
+}
+
+/*################ 테이블 DIV 부분 ################*/
+table {
+    width: 50%;
+    table-layout: auto;
+    word-break: break-all;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+th {
+    background-color: #F4F4F4;
+    border: 1px solid #C3C3C3;
+    color: #717171;
+    text-align: center;
+    height: 40px;
+}
+
+.row td {
+    text-align: center;
+}

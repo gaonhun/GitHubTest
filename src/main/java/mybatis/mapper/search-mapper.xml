@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://-mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="search">
+
+	<!-- 매장 상세 검색 정보 -->
+	<select id="SearchStore" resultType="K7_COMPANY_MASTER_OMS">
+		SELECT
+			CPN_CD,
+			CPN_NM,
+			CPN_ADDR, 
+			CPN_ADDR_DT, 
+			CPN_STATE,
+			CPN_TEL,
+			HPNO,
+			RN
+		FROM(
+			SELECT
+				CPN_CD,
+				CPN_NM,
+				CPN_ADDR, 
+				CPN_ADDR_DT, 
+				CPN_STATE,
+				CPN_TEL,
+				HPNO,
+				ROWNUM RN
+			FROM(
+				SELECT 
+					NVL(A.CPN_CD, ' ') CPN_CD,
+					NVL(A.CPN_NM, ' ') CPN_NM,
+					NVL(A.CPN_ADDR, ' ') CPN_ADDR,
+					NVL(A.CPN_ADDR_DT, ' ') CPN_ADDR_DT,
+					NVL(B.DEFINITION_NM, ' ') CPN_STATE,
+					NVL(A.CPN_TEL, ' ') CPN_TEL,
+					NVL(A.HPNO, ' ') HPNO
+				FROM K7_COMPANY_MASTER_OMS A
+				INNER JOIN K7_REFERENCE_CODE_OMS B ON B.DEFINITION_CD = A.CPN_STATE 
+				AND B.GROUP_CD = 'AG' AND A.CPN_TYPE = 'Store'
+				<if test='type!=null and !keyword.equals("")'>
+			        <if test='type.equals("scd")'>
+			           WHERE A.CPN_CD LIKE #{keyword}||'%'
+			     	</if>
+			     	<if test='type.equals("snm")'>
+			           WHERE A.CPN_NM LIKE '%'||#{keyword}||'%'
+			     	</if>
+			    </if>
+			    ORDER BY REGEXP_REPLACE(CPN_NM, '[0-9]')
+				)                    
+			<![CDATA[ WHERE ROWNUM <= #{pageNum} * #{amount} ]]>
+			)
+	   <![CDATA[ WHERE RN > (#{pageNum}-1) * #{amount} ]]>                 
+	</select>
+	
+	<!-- 채널사 검색 정보 -->
+	<select id="SearchChannel" resultType="K7_COMPANY_MASTER_OMS">
+		SELECT
+			K7_LINK_CD,
+			CPN_CD,
+			CPN_NM,
+			CPN_STATE, 
+			CPN_TEL,
+			RN
+		FROM(
+			SELECT
+				K7_LINK_CD,
+				CPN_CD,
+				CPN_NM,
+				CPN_STATE,
+				CPN_TEL,
+				ROWNUM RN
+			FROM(
+			    SELECT
+			       NVL(A.K7_LINK_CD , ' ') K7_LINK_CD, 
+			       NVL(A.CPN_CD , ' ') CPN_CD,
+			       NVL(A.CPN_NM, ' ') CPN_NM,
+			       NVL(B.DEFINITION_NM, ' ') CPN_STATE,
+				   NVL(A.CPN_TEL, ' ') CPN_TEL
+				FROM K7_COMPANY_MASTER_OMS A
+				INNER JOIN K7_REFERENCE_CODE_OMS B ON B.DEFINITION_CD = A.CPN_STATE AND A.CPN_TYPE = 'Order'
+				<if test='type!=null and !keyword.equals("")'>
+			        <if test='type.equals("occd")'>
+			           WHERE K7_LINK_CD LIKE UPPER(#{keyword}||'%')
+			     	</if>
+			     	<if test='type.equals("ocnm")'>
+			           WHERE CPN_NM LIKE '%'||#{keyword}||'%'
+			     	</if>
+			     </if>
+			     ORDER BY K7_LINK_CD
+				)                    
+			<![CDATA[ WHERE ROWNUM <= #{pageNum} * #{amount} ]]>
+			)
+	   <![CDATA[ WHERE RN > (#{pageNum}-1) * #{amount} ]]>                    
+	</select>
+	
+	<!-- 배달 대행 검색 정보 -->
+	<select id="SearchDelivery" resultType="K7_COMPANY_MASTER_OMS">
+		SELECT
+			CPN_CD,
+			CPN_NM,
+			CPN_STATE,
+			CPN_TEL,
+			RN
+		FROM(
+			SELECT
+				CPN_CD,
+				CPN_NM,
+				CPN_STATE,
+				CPN_TEL,
+				ROWNUM RN
+			FROM(
+				SELECT 
+			       NVL(A.CPN_CD, ' ') CPN_CD,
+			       NVL(A.CPN_NM, ' ') CPN_NM,
+			       NVL(B.DEFINITION_NM, ' ') CPN_STATE,
+			       NVL(A.CPN_TEL, ' ') CPN_TEL
+				FROM K7_COMPANY_MASTER_OMS A
+				INNER JOIN K7_REFERENCE_CODE_OMS B ON B.DEFINITION_CD = A.CPN_STATE AND A.CPN_TYPE = 'Delivery'
+				<if test='type!=null and !keyword.equals("")'>
+			        <if test='type.equals("dccd")'>
+			        	WHERE CPN_CD LIKE UPPER(#{keyword}||'%')
+			     	</if>
+			     	<if test='type.equals("dcnm")'>
+			        	WHERE CPN_NM LIKE '%'||#{keyword}||'%'
+			     	</if>
+			     </if>       
+			     ORDER BY CPN_CD
+				)                    
+			<![CDATA[ WHERE ROWNUM <= #{pageNum} * #{amount} ]]>
+			)
+		<![CDATA[ WHERE RN > (#{pageNum}-1) * #{amount} ]]>                      
+	</select>
+
+	<!-- 상품 상세 검색 정보 -->
+	<select id="SearchProduct" resultType="K7_MENU_MASTER_OMS">
+		SELECT
+			MENU_CD,
+			MENU_NM,
+			CTGR_NM,
+			DEFINITION_NM,
+			REG_DATE,
+			RN
+		FROM(
+			SELECT
+				MENU_CD,
+				MENU_NM,
+				CTGR_NM,
+				DEFINITION_NM,
+				REG_DATE,
+				ROWNUM RN
+			FROM(
+				SELECT 
+					NVL(A.MENU_CD,' ') MENU_CD,
+					NVL(A.MENU_NM, ' ') MENU_NM,
+					NVL(C.CTGR_NM, ' ') CTGR_NM,
+					NVL(B.DEFINITION_NM,' ') DEFINITION_NM,
+					NVL(A.REG_DATE,'') REG_DATE
+				FROM K7_MENU_MASTER_OMS A
+				INNER JOIN K7_REFERENCE_CODE_OMS B ON B.DEFINITION_CD = A.MENU_STATE
+				AND B.GROUP_CD = 'AJ'
+				LEFT OUTER JOIN K7_CATEGORY_MASTER_OMS C ON A.CTGR_CD = C.CTGR_CD
+				<if test='type!=null and !keyword.equals("")'>
+					<if test='type.equals("pcd")'>
+						WHERE A.MENU_CD LIKE #{keyword}||'%'
+					</if>
+					<if test='type.equals("pnm")'>
+					WHERE A.MENU_NM LIKE '%'||#{keyword}||'%'
+				 	</if>
+				</if>    
+				<!-- ORDER BY REGEXP_REPLACE(MENU_NM, '[0-9]'), to_number(REGEXP_REPLACE(MENU_NM, '[^0-9]')) -->
+				ORDER BY C.SEQ ASC, A.SEQUENCE ASC
+				)                    
+			<![CDATA[ WHERE ROWNUM <= #{pageNum} * #{amount} ]]>
+			)
+		<![CDATA[ WHERE RN > (#{pageNum}-1) * #{amount} ]]>
+	</select>
+	
+	
+	
+	<!-- Paging 처리 위해 게시글 개수 가져오기 -->
+	
+	<!-- 매장 검색 정보 총 게시글 개수 확인 -->
+	<select id="getSearchStoreTotal" resultType="int">
+		SELECT 
+			COUNT(*)
+		FROM K7_COMPANY_MASTER_OMS A
+		INNER JOIN K7_REFERENCE_CODE_OMS B ON B.DEFINITION_CD = A.CPN_STATE 
+		AND B.GROUP_CD = 'AG' AND A.CPN_TYPE = 'Store'
+		<if test='type!=null and !keyword.equals("")'>
+	        <if test='type.equals("scd")'>
+	          WHERE A.CPN_CD LIKE #{keyword}||'%'
+	     	</if>
+	     	<if test='type.equals("snm")'>
+	          WHERE A.CPN_NM LIKE '%'||#{keyword}||'%'
+	     	</if>
+	    </if>                
+	</select>
+	
+	<!-- 채널사 상세 검색 정보 총 게시글 개수 확인 -->
+	<select id="getSearchChannelTotal" resultType="int">
+		SELECT 
+	       COUNT(*)
+		FROM K7_COMPANY_MASTER_OMS A
+		INNER JOIN K7_REFERENCE_CODE_OMS B ON B.DEFINITION_CD = A.CPN_STATE AND A.CPN_TYPE = 'Order'
+		<if test='type!=null and !keyword.equals("")'>
+	        <if test='type.equals("occd")'>
+	           WHERE CPN_CD LIKE #{keyword}||'%'
+	     	</if>
+	     	<if test='type.equals("ocnm")'>
+	           WHERE CPN_NM LIKE '%'||#{keyword}||'%'
+	     	</if>
+	     </if>
+	</select>
+	
+	<!-- 배달 대행 상세 검색 정보 총 게시글 개수 확인 -->
+	<select id="getSearchDeliveryTotal" resultType="int">
+		SELECT 
+	       COUNT(*)
+		FROM K7_COMPANY_MASTER_OMS A
+		INNER JOIN K7_REFERENCE_CODE_OMS B ON B.DEFINITION_CD = A.CPN_STATE AND A.CPN_TYPE = 'Delivery'
+		<if test='type!=null and !keyword.equals("")'>
+	        <if test='type.equals("dccd")'>
+	        	WHERE CPN_CD LIKE #{keyword}||'%'
+	     	</if>
+	     	<if test='type.equals("dcnm")'>
+	        	WHERE CPN_NM LIKE '%'||#{keyword}||'%'
+	     	</if>
+	     </if>                                 
+	</select>
+	
+	<!-- 상품 상세 검색 정보 총 게시글 개수 확인 -->
+	<select id="getSearchProductTotal" resultType="int">
+		SELECT 
+	      COUNT(*)
+		FROM K7_MENU_MASTER_OMS A
+		INNER JOIN K7_REFERENCE_CODE_OMS B ON B.DEFINITION_CD = A.MENU_STATE
+		AND B.GROUP_CD = 'AJ'
+		<if test='type!=null and !keyword.equals("")'>
+       		<if test='type.equals("pcd")'>
+	        	WHERE A.MENU_CD LIKE #{keyword}||'%'
+	     	</if>
+	     	<if test='type.equals("pnm")'>
+	        	WHERE A.MENU_NM LIKE '%'||#{keyword}||'%'
+	     	</if>
+	    </if>       
+	</select>
+
+
+</mapper>

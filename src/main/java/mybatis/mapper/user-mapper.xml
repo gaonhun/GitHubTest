@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="user">
+	<select id="loginCustomer" resultType="K7_USER_ACCOUNT_OMS">
+		SELECT PHONE, USER_NM, ACCOUNT, PASSWORD
+		FROM K7_USER_ACCOUNT_OMS
+		WHERE ACCOUNT = #{ACCOUNT} AND PASSWORD = #{PASSWORD}
+	</select>
+
+	<select id="userSearchList" resultType="K7_USER_ACCOUNT_OMS" parameterType="java.util.HashMap">
+		SELECT
+			RN,
+			ACCOUNT,
+			USER_NM,
+			USER_LV,
+			REG_DATE,
+			MDF_DATE,
+			USER_CD,
+			PASSWORD
+		FROM(
+			SELECT
+				ACCOUNT,
+				USER_NM,
+				USER_LV,
+				REG_DATE,
+				MDF_DATE,
+				USER_CD,
+				PASSWORD,
+				ROWNUM RN
+			FROM(
+				SELECT 
+					NVL(A.ACCOUNT,' ') ACCOUNT,
+					NVL(A.USER_NM, ' ') USER_NM,
+					NVL(B.LEVEL_EXP , ' ') USER_LV,
+					REG_DATE, 
+					MDF_DATE, 
+					USER_CD, 
+					NVL(PASSWORD, ' ') PASSWORD
+				FROM K7_USER_ACCOUNT_OMS A
+				LEFT OUTER JOIN K7_USER_AUTH_OMS B ON(B.USER_LV = A.USER_LV)
+				<if test='userNm!=null and !userNm.equals("")'>
+					WHERE USER_NM LIKE '%'||#{userNm}||'%'
+				</if>
+				ORDER BY REG_DATE DESC
+				)                    
+			<![CDATA[ WHERE ROWNUM <= #{cri.pageNum} * #{cri.amount} ]]>
+			)
+		<![CDATA[ WHERE RN > (#{cri.pageNum}-1) * #{cri.amount} ]]> 
+	</select>
+
+	<select id="userDetail" resultType="K7_USER_ACCOUNT_OMS">
+		SELECT A.USER_CD, A.ACCOUNT, A.PASSWORD, A.USER_NM, A.PHONE, A.USER_EMAIL, 
+			   A.USER_ADDR, A.USER_ADDR_DETAIL, A.USER_LV, A.REG_DATE, A.MDF_DATE,
+			   A.REG_USER_CD, A.MDF_USER_CD, A.CPN_CD, B.USER_NM AS REG_USER_NM, C.USER_NM AS MDF_USER_NM,
+			   D.LEVEL_EXP
+		FROM K7_USER_ACCOUNT_OMS A
+		LEFT OUTER JOIN K7_USER_ACCOUNT_OMS B
+			ON (A.REG_USER_CD = B.USER_CD )
+		LEFT OUTER JOIN K7_USER_ACCOUNT_OMS C
+			ON (A.MDF_USER_CD = C.USER_CD)
+		LEFT OUTER JOIN K7_USER_AUTH_OMS D 
+			ON (D.USER_LV = A.USER_LV)
+		WHERE A.USER_CD = #{user_cd}
+	</select>
+
+	<insert id="userInsert" parameterType="K7_USER_ACCOUNT_OMS">
+		INSERT INTO
+			K7_USER_ACCOUNT_OMS
+			(
+				USER_CD,
+				ACCOUNT,
+				PASSWORD,
+				USER_NM,
+				USER_LV,
+				CPN_CD,
+				PHONE,
+				USER_EMAIL,
+				USER_ADDR,
+				USER_ADDR_DETAIL,
+				REG_USER_CD,
+				REG_DATE
+			)
+			VALUES
+			(
+				K7_OMS_SEQ_USER_CD.nextval,
+				#{ACCOUNT},
+				#{PASSWORD},
+				#{USER_NM},
+				#{USER_LV},
+				#{CPN_CD},
+				REPLACE(#{PHONE}, '-', ''),
+				#{USER_EMAIL},
+				#{USER_ADDR},
+				#{USER_ADDR_DETAIL},
+				#{REG_USER_CD},
+				SYSDATE
+			)
+	</insert>
+	
+	<update id="userUpdate" parameterType="K7_USER_ACCOUNT_OMS">
+		UPDATE K7_USER_ACCOUNT_OMS
+		SET 
+			ACCOUNT = #{ACCOUNT},
+			PASSWORD = #{PASSWORD},
+			USER_NM = #{USER_NM},
+			PHONE =	REPLACE(#{PHONE},'-', ''),
+			USER_EMAIL = #{USER_EMAIL},
+			USER_LV = #{USER_LV},
+			CPN_CD = #{CPN_CD},
+			USER_ADDR = #{USER_ADDR},
+			USER_ADDR_DETAIL = #{USER_ADDR_DETAIL},
+			MDF_USER_CD = #{MDF_USER_CD},
+			MDF_DATE = SYSDATE
+		WHERE USER_CD = #{USER_CD}
+	</update>
+	
+	<!-- 아이디 체크 -->
+	<select id="getUserCheck" resultType="int" parameterType="String">
+		SELECT count(*)
+		FROM K7_USER_ACCOUNT_OMS
+		WHERE ACCOUNT = #{user_id}
+	</select>
+	
+	<!-- 사용자명 체크 -->
+	<select id="getNmCheck" resultType="int" parameterType="String">
+		SELECT count(*)
+		FROM K7_USER_ACCOUNT_OMS
+		WHERE USER_NM = #{user_nm}
+	</select>
+	
+	<select id="getSearchUserTotal" resultType="int" parameterType="java.util.HashMap">
+		SELECT 
+			COUNT(*)
+		FROM K7_USER_ACCOUNT_OMS 
+		<if test='userNm!=null and !userNm.equals("")'>
+			WHERE USER_NM LIKE '%'||#{userNm}||'%'
+		</if>
+	</select>
+		
+	<update id="setSMSauthentication" parameterType="K7_USER_ACCOUNT_OMS">
+		UPDATE 
+			K7_USER_ACCOUNT_OMS
+		SET
+			AUTH_NO = #{AUTH_NO}
+		WHERE ACCOUNT = #{ACCOUNT} AND PASSWORD = #{PASSWORD}
+	</update>
+	
+	<select id="SMSauthCheck" resultType="K7_USER_ACCOUNT_OMS" parameterType="K7_USER_ACCOUNT_OMS">
+		SELECT USER_CD, USER_NM, ACCOUNT, PASSWORD, USER_LV, CPN_CD
+		FROM K7_USER_ACCOUNT_OMS
+		WHERE ACCOUNT = #{ACCOUNT} AND PASSWORD = #{PASSWORD} OR AUTH_NO = #{AUTH_NO}
+	</select>
+	
+	<select id="getUserLevel" resultType="K7_USER_AUTH_OMS">
+		SELECT USER_LV, LEVEL_EXP FROM K7_USER_AUTH_OMS ORDER BY DECODE(USER_LV, 'M', 1), LEVEL_EXP ASC
+	</select>
+</mapper>
+
+
+

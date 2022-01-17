@@ -1,0 +1,114 @@
+/*매장리스트 조회 페이지*/
+.div_header {
+    border: 0px;
+}
+
+body{
+    background-color: white;
+}
+
+.main_div {
+    padding: 25px;
+    border: 1px solid #C3C3C3;
+    background-color: white;
+    height: calc(100vh - 150px);
+    overflow: auto;
+}
+
+.search_div {
+    display: inline-block;
+}
+
+.select_box {
+    border: 2px solid #099769;
+    border-radius: 1px;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+    width: 110px;
+    height: 30px;
+    font-family: inherit;
+    /* 폰트 상속 */
+    font-size: 12px;
+    color: #099769;
+    font-weight: bold;
+    display: inline-block;
+    float: left;
+    margin-top: 12px;
+}
+
+.search_input {
+    border: 2px solid #099769;
+    border-left: 0px;
+    border-radius: 1px;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    width: 140px;
+    height: 30px;
+    font-family: inherit;
+    /* 폰트 상속 */
+    font-size: 12px;
+    display: inline-block;
+    float: left;
+    margin-top: 12px;
+}
+
+option {
+    font-size: 12px;
+    float: none;
+    color: #717171;
+    font-weight: bold;
+    float: left;
+}
+select:focus, input:focus {
+    outline:none;
+}
+
+.btn_search:hover {
+    color: #505050;
+    border: 1.5px solid #c4c4c4;
+    background-color: #D3D3D3;
+    transition: 0.5s;
+}
+
+table {
+    width: 100%;
+    border: 1px solid #C3C3C3;
+    border-collapse: collapse;
+    display: inline-table;
+    overflow-x: auto;
+    
+}
+
+table::-webkit-scrollbar {
+    display: none;
+}
+
+th {
+    border: 1px solid #C3C3C3;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #717171;
+    padding: 10px;
+    text-align: center;
+    height: 25px;
+    white-space: nowrap;
+}
+
+td {
+    color: #717171;
+    border: 1px solid #C3C3C3;
+    text-align: center;
+    font-weight: 500;
+    padding: 2px;
+    height: 30px;
+}
+
+.mtitle {
+    background-color: #F4F4F4;
+    font-size: medium;
+    font-size: 0.8rem;
+    text-align: left;
+    padding: 10px;
+    padding-left: 25px;
+    height: 34px;
+}

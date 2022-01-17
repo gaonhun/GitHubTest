@@ -1,0 +1,121 @@
+*{
+	margin: 0;
+	padding: 0;
+}
+
+html{
+	height: 100vh;
+	width: 100vw;
+}
+
+#login_box {
+	position: absolute;
+	top: 50vh;
+	left: 50vw;
+	margin-top: -275px;
+	margin-left: -500px;
+    width: 1000px;
+    height: 550px;
+    box-shadow: 5px 5px 20px lightgrey;
+    display: block;
+    
+}
+
+#login_logo{
+	width: 50%;
+	height: 100%;
+}
+
+.login_form{
+	float: right;
+	width: 50%;
+	height: 100%;
+	padding: 100px;
+	text-align: center;	
+	background-color: white;
+    box-sizing: border-box; 
+}
+
+#login_text {
+    font-size: 24px;
+    font-weight: bold;
+    color: #3F3F3F;
+    text-align: left;
+    margin-top: 70px;
+    margin-bottom: 10px;
+    padding-left: 10px;
+}
+
+.login_insert {
+    width: 280px;
+    height: 50px;
+    margin: 0px;
+    padding: 0px;
+    border: 1px solid #3F3F3F;
+    margin-bottom: 10px;
+    text-indent: 40px;
+    border-radius: 3px;
+}
+
+#userId {
+    background-image: url(../img/icon_id.png);
+    background-size: 15px 15px;
+    background-position: 15px center;
+    /* 간격 */
+    background-repeat: no-repeat;
+    margin: 0 10px 10px 10px;
+}
+
+#userPw {
+    background-image: url(../img/icon_pw.png);
+    background-size: 15px 15px;
+    background-position: 15px center;
+    /* 간격 */
+    background-repeat: no-repeat;
+    margin: 0 10px 10px 10px;
+}
+
+#loginbt {
+    background-image: url(../img/btn_login.png);
+    background-repeat: no-repeat;
+    margin: 0px;
+    padding: 0px;
+    width: 280px;
+    height: 50px;
+    border: 0px;
+    border-radius: 3px;
+}
+
+#loginbt:hover{
+	cursor: pointer;
+}
+
+/*SWEET ALERT CSS*/
+.swal-button {
+	background-color: #099769;
+}
+
+input:focus {
+    outline: none;
+    border-radius: 3px;
+}
+
+#idsave{
+	display: inline-block;
+	float: right;
+	margin-right: 10px;
+	margin-bottom: 5px
+}
+
+#idSaveCheck{
+	height: 12px;
+	width: 12px;
+}
+
+#idlabel{
+	font-size: 14px;
+}
+
+#idlabel:hover, #idSaveCheck:hover{
+	cursor: pointer;
+} 

@@ -1,0 +1,176 @@
+.btn_cancel {
+	background: #EDEDED;
+	color: #707070;
+	padding: 10px;
+	font-size: 12px;
+	font-weight: bolder;
+	text-align: center;
+	text-decoration: none;
+	border: 1.5px solid #D3D3D3;
+	border-radius: 1px;
+	width: 130px;
+	cursor: pointer;
+	margin: 6px 7px;
+}
+
+.btn_cancel:hover {
+	color: #505050;
+	background-color: #D3D3D3;
+	transition: 0.5s;
+}
+
+.main_div {
+    padding: 25px;
+    border: 1px solid #C3C3C3;
+    border-top: 0;
+    background-color: white;
+    overflow: auto;
+    height: calc(100vh - 160px);
+}
+
+th {
+	height: 36px;
+    border: 1px solid #C3C3C3;
+    font-weight: bold;
+    color: #717171;
+    padding: 5px;
+    text-align: center;
+    width: 160px;
+
+}
+
+.mtitle {
+    background-color: #F4F4F4;
+    font-size: 0.9rem;
+    text-align: left;
+    padding: 8px 25px;
+    height: 40px;
+}
+
+td {
+    color: #717171;
+    border: 1px solid #C3C3C3;
+    font-size:0.8rem;
+    width: 400px;
+    padding: 0 10 0 10px;
+}
+
+#f_table {
+    width: 100%;
+    white-space: pre-wrap;
+    border: 1px solid #C3C3C3;
+    border-collapse: collapse;
+    table-layout: initial;
+}
+
+#f_table td {
+    padding: 0 10 0 10px;
+}
+
+#s_table {
+	width: 100%;
+    white-space: pre-wrap;
+    border: 1px solid #C3C3C3;
+    table-layout: fixed;
+    margin-top: 25px;
+}
+
+#s_table td {
+	height: 36px;
+    text-align: left;
+    border: 1px solid #C3C3C3;
+    padding: 0 10 0 10px;
+}
+
+.hide_div{
+	border: 5px solid #099769;
+	border-radius: 25px;
+	position: absolute;
+	background-color: white;
+	top: 50vh;
+	left: 50vw;
+	margin-top: -125px;
+	margin-left: -275px;
+	padding: 20px 25px;
+    width: 500px;
+    height: 220px;
+    display: none;
+}
+
+.show_div{
+	display: block;
+    z-index: 999;
+}
+
+.cancel_reason{
+	border-radius: 5px;
+	border: 2px solid #C3C3C3;
+	outline: none;
+	
+	width: 500px;
+	height: 150px;
+	resize: none;	
+}
+
+.cancel_btn_div{
+	padding: 5px;
+	text-align: center;
+}
+
+#p_cancel{
+	font-size: 18px;
+	margin-bottom: 10px;
+	text-align: center;
+    font-weight: bold;
+}
+
+#confirm_btn{
+	margin: 5px;
+	width: 50px;
+	height: 30px;
+	background-color: #099769;
+	border-radius: 5px;
+	color: white;
+	border: none;
+}
+
+#cancel_btn{
+	margin: 5px;
+	width: 50px;
+	height: 30px;
+	background-color: #F4F4F4;
+	border-radius: 5px;
+	border: 1px solid #C3C3C3;
+}
+
+#confirm_btn:hover, #cancel_btn:hover{
+	cursor: pointer;
+}
+
+.inItem {
+    width: 1px;
+    background-color: #099769;
+    border: 1px solid #099769;
+    padding: 0px;
+}
+
+.itemTd{
+	  background-color: #F4F4F4;
+	  border: 1px solid #C3C3C3;
+	  color: #717171;
+	  text-align: left;
+	  height: 36px;
+}
+
+.itemTr{
+	background-color: #F4F4F4;
+	border: 1px solid #C3C3C3;
+	color: #717171;
+	padding: 5px;
+	text-align: center;
+	height: 36px;
+}
+
+#clrTd{
+	text-align: center; 
+}

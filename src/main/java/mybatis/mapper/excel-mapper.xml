@@ -1,0 +1,977 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="excel">
+
+	<!-- 다운로드 -->
+	<!-- 매장리스트 Excel -->
+	<select id="oms_sub01_01excel" resultType="K7_COMPANY_MASTER_OMS" parameterType="java.util.HashMap">
+		SELECT
+			CPN_CD,
+			CPN_NM,
+			CPN_ADDR,
+			CPN_STATE,
+			CPN_TEL,
+			DAY_START_TIME,
+			DAY_END_TIME,
+			ORD_CH_NM,
+			DLV_CH_NM,
+			REG_DATE,
+			ROWNUM RN
+		FROM(
+			SELECT 
+				NVL(A.CPN_CD,' ') CPN_CD,
+				NVL(A.CPN_NM,' ') CPN_NM,
+				NVL(A.CPN_ADDR,' ') CPN_ADDR,
+				NVL(B.DEFINITION_NM,' ') CPN_STATE,
+				NVL(A.CPN_TEL,' ') CPN_TEL,
+				NVL(C.DAY_START_TIME,' ') DAY_START_TIME,
+				NVL(C.DAY_END_TIME,' ') DAY_END_TIME,
+				NVL(F.ORD_CH_NM,' ') ORD_CH_NM,
+				NVL(E.DLV_CH_NM,' ') DLV_CH_NM,
+				NVL(A.REG_DATE,'') REG_DATE
+			FROM K7_COMPANY_MASTER_OMS A
+			INNER JOIN K7_REFERENCE_CODE_OMS B ON B.DEFINITION_CD = A.CPN_STATE
+			AND B.GROUP_CD = 'AG' AND A.CPN_TYPE = 'Store'
+			<if test='sst!=null and !sst.equals("")'>
+				AND B.DEFINITION_CD IN (#{sst})
+			</if>
+			INNER JOIN K7_STORE_OPERATION_OMS C ON C.STO_CD = A.CPN_CD
+			INNER JOIN (
+					SELECT A.STO_CD, B.CPN_NM AS DLV_CH_NM
+					FROM K7_STORE_OPERATION_OMS A
+					INNER JOIN K7_COMPANY_MASTER_OMS B ON B.CPN_CD = A.DELIVERY_CH_CD
+				<if test='dccd!=null and !dccd.equals("")'>
+			    	AND A.DELIVERY_CH_CD = #{dccd}
+				</if>
+			) E ON E.STO_CD = A.CPN_CD
+			INNER JOIN (
+				SELECT 
+					STO_CD,
+					SUBSTR(
+						XMLAGG(
+							XMLELEMENT(COL ,',', ORD_CH_NM) ORDER BY ORD_CH_NM
+						).EXTRACT('//text()').GETSTRINGVAL(), 2
+					) AS ORD_CH_NM
+				FROM (
+					SELECT STO_CD, CPN_NM AS ORD_CH_NM
+					FROM K7_COMPANY_MASTER_OMS A 
+					INNER JOIN K7_CHANNEL_STORE_OPERATION_OMS B
+					ON (B.CH_CD = A.CPN_CD)
+					<if test='occd!=null and !occd.equals("")'>
+					    	AND B.CH_CD = #{occd}
+						</if>
+					)
+					GROUP BY STO_CD
+				) F ON F.STO_CD = A.CPN_CD
+			<if test='scd!=null and !scd.equals("")'>
+				WHERE A.CPN_CD = #{scd}
+			</if>
+			ORDER BY CPN_NM
+		)
+	</select>
+	
+	<!-- 상품리스트 Excel -->
+	<select id="oms_sub02_01excel" resultType="K7_MENU_MASTER_OMS" parameterType="java.util.HashMap">
+		SELECT
+			ROWNUM RN,
+			MENU_CD,
+			MENU_NM,
+			PRICE,
+			MENU_STATE,
+			CTGR_NM,
+			REG_DATE
+		FROM(
+			SELECT
+				NVL(A.MENU_CD, ' ') MENU_CD, 
+				NVL(A.MENU_NM, ' ') MENU_NM,
+				NVL(A.PRICE, 0) PRICE,
+				NVL(B.DEFINITION_NM, ' ') MENU_STATE,
+				NVL(C.CTGR_NM, ' ') CTGR_NM,
+				NVL(A.REG_DATE, '') REG_DATE
+			FROM K7_MENU_MASTER_OMS A
+			INNER JOIN K7_REFERENCE_CODE_OMS B ON B.DEFINITION_CD = A.MENU_STATE		
+			AND B.GROUP_CD = 'AJ'
+			<if test='etyp!=null  and !etyp.equals("")'>
+		    	AND B.DEFINITION_CD = #{etyp}
+			</if>
+			INNER JOIN K7_CATEGORY_MASTER_OMS C ON C.CTGR_CD = A.CTGR_CD
+			<if test='sinp!=null and !sinp.equals("")'>
+		    	AND C.CTGR_CD = #{sinp}
+			</if>
+			LEFT OUTER JOIN K7_USER_ACCOUNT_OMS D ON (A.REG_USER_CD = D.USER_CD)
+			LEFT OUTER JOIN K7_USER_ACCOUNT_OMS E ON (A.MDF_USER_CD = E.USER_CD)
+			<if test='pcd!=null and !pcd.equals("")'>
+		    	WHERE A.MENU_CD = #{pcd}
+			</if>
+			ORDER BY C.SEQ ASC, A.SEQUENCE ASC
+		)
+	</select>
+	
+	<!-- 주문 내역 Excel -->
+	<select id="oms_sub03_01excel" resultType="K7_ORDER_HEADER_OMS" parameterType="java.util.HashMap">
+		SELECT
+			ORDER_RE_NO,
+			ORDER_CH_NO,
+			STO_CD,
+			STO_NM,
+			ORDER_STATE,
+			ORDER_CH_NM,
+			ORDER_TYPE,
+			PAY_AMT,
+			DLV_AMT,
+			DIS_AMT,
+			NET_AMT,
+			TOT_AMT,
+			LAND_ADDR,
+			LAND_ADDR_DT,
+			ROAD_ADDR,
+			ROAD_ADDR_DT,
+			MEM_PHONE,
+			SAFE_MEM_PHONE,
+			DLV_CH_NM,
+			DLV_STATE,
+			REG_DATE,
+			MDF_DATE,
+			ORDER_CH_CD,
+			ROWNUM RN
+		FROM(
+			SELECT
+				NVL(A.ORDER_RE_NO,'') ORDER_RE_NO, -- 주문번호
+				NVL(A.ORDER_CH_NO,'') ORDER_CH_NO, -- 주문번호
+				NVL(A.STO_CD, ' ') STO_CD, -- 매장코드
+				NVL(B.CPN_NM,' ') STO_NM, -- 매장명
+				NVL(C.DEFINITION_NM,' ') ORDER_STATE, -- AF 주문상태코드
+				NVL(D.CPN_NM,' ') ORDER_CH_NM, -- 주문채널사명
+				NVL(E.DEFINITION_NM,' ') ORDER_TYPE, -- AC 주문타입코드
+				NVL(A.TOT_AMT-A.DIS_AMT, 0) PAY_AMT, -- 결제금액
+				NVL(A.DLV_AMT, 0) DLV_AMT, -- 배달비
+				NVL(A.DIS_AMT, 0) DIS_AMT, -- 할인금액
+				NVL(A.NET_AMT, 0) NET_AMT, -- 순 매출액
+				NVL(A.TOT_AMT, 0) TOT_AMT, -- 총 매출액
+				NVL(A.LAND_ADDR,' ') LAND_ADDR, -- 지번 주소
+				NVL(A.LAND_ADDR_DT,' ') LAND_ADDR_DT, -- 지번 상세 주소
+				NVL(A.ROAD_ADDR,' ') ROAD_ADDR, -- 지번 주소
+				NVL(A.ROAD_ADDR_DT,' ') ROAD_ADDR_DT, -- 지번 상세 주소
+				NVL(A.MEM_PHONE,' ') MEM_PHONE, -- 고객 전화번호
+				NVL(A.SAFE_MEM_PHONE,' ') SAFE_MEM_PHONE, -- 고객 안심번호
+				NVL(F.CPN_NM,' ') DLV_CH_NM, -- 배달사명
+				NVL(G.DEFINITION_NM,' ') DLV_STATE, -- 배달 대행 상태
+				NVL(A.REG_DATE,'') REG_DATE, -- 등록일시
+				NVL(A.MDF_DATE,'') MDF_DATE, -- 수정일시
+				NVL(A.ORDER_CH_CD, '') ORDER_CH_CD -- 채널사 코드
+			FROM K7_ORDER_HEADER_OMS A
+			INNER JOIN K7_COMPANY_MASTER_OMS B ON B.CPN_CD = A.STO_CD
+			LEFT OUTER JOIN K7_REFERENCE_CODE_OMS C ON C.DEFINITION_CD = A.ORDER_STATE AND C.GROUP_CD = 'AE'
+			INNER JOIN K7_COMPANY_MASTER_OMS D ON D.CPN_CD = A.ORDER_CH_CD
+			<if test='occd!=null and !occd.equals("")'>
+		    	AND D.CPN_CD = #{occd}
+			</if>
+			LEFT OUTER JOIN K7_REFERENCE_CODE_OMS E ON E.DEFINITION_CD = A.ORDER_TYPE AND E.GROUP_CD = 'AC'
+			LEFT OUTER JOIN (
+				SELECT A.CPN_NM, B.ORDER_RE_NO, B.DLV_TIME FROM K7_COMPANY_MASTER_OMS A 
+				LEFT OUTER JOIN K7_ORDER_DELIVERY_INFO_OMS B ON B.DLV_CH_CD = A.CPN_CD
+			) F ON F.ORDER_RE_NO = A.ORDER_RE_NO
+			LEFT OUTER JOIN (
+				SELECT A.DEFINITION_NM, B.ORDER_RE_NO FROM K7_REFERENCE_CODE_OMS A 
+				LEFT OUTER JOIN K7_ORDER_DELIVERY_INFO_OMS B ON B.DLV_STATE = A.DEFINITION_CD AND GROUP_CD = 'AD'
+			) G ON G.ORDER_RE_NO = A.ORDER_RE_NO
+			<![CDATA[
+				WHERE to_char(A.REG_DATE,'YYYYMMDD') >= #{sdate} AND to_char(A.REG_DATE,'YYYYMMDD') <= #{edate} 
+			]]>
+			<if test='scd!=null and !scd.equals("")'>
+				AND A.STO_CD = #{scd}
+			</if>
+			<if test='ono!=null and !ono.equals("")'>
+		    	AND A.ORDER_RE_NO LIKE '%'||#{ono}
+			</if>
+			<if test='chono!=null and !chono.equals("")'>
+		    	AND A.ORDER_CH_NO LIKE '%'||#{chono}
+			</if>
+			ORDER BY REG_DATE DESC
+		)                  
+	</select>	
+
+	<insert id="setCompanyMasterUpload" parameterType="java.util.HashMap">
+		{
+		CALL
+			DECLARE
+			BEGIN	
+			<foreach collection="excel" item="item">
+				MERGE INTO K7_COMPANY_MASTER_OMS
+				USING DUAL ON (CPN_CD = #{item.B})
+				WHEN MATCHED THEN 
+				UPDATE SET
+					CPN_BIZ_TYPE = #{item.A},
+					CPN_NM = #{item.C},
+					CEO_NM = #{item.D},
+					CPN_BIZ_NO = #{item.E},
+					CPN_TEL = #{item.I},
+					MNG_NM = #{item.J},
+					MNG_HPNO = #{item.K},
+					FC_NM = #{item.L},
+					HPNO = #{item.M},
+					EMAIL = #{item.N},
+					CPN_ADDR = #{item.O},
+					IN_APP = #{item.AA},
+					CPN_STATE = #{item.AB},
+					MEMO = #{item.AC},
+					CPN_DESC = #{item.AD},
+					CPN_IMAGE_URL = #{item.AE},
+					OPN_DT = #{item.AF},
+					REG_USER_CD = #{usercd},
+					REG_DATE = SYSDATE
+				WHEN NOT MATCHED THEN
+					INSERT (
+						CPN_TYPE,
+						CPN_BIZ_TYPE,
+						CPN_CD,
+						CPN_NM,
+						CEO_NM,
+						CPN_BIZ_NO,
+						CPN_TEL,
+						MNG_NM,
+						MNG_HPNO,
+						FC_NM,
+						HPNO,
+						EMAIL,
+						CPN_ADDR,
+						IN_APP,
+						CPN_STATE,
+						MEMO,
+						CPN_DESC,
+						CPN_IMAGE_URL,
+						OPN_DT,
+						REG_USER_CD,
+						REG_DATE
+					)
+				VALUES
+					(
+						'Store',
+						#{item.A},
+						#{item.B},
+						#{item.C},
+						#{item.D},
+						#{item.E},
+						#{item.I},
+						#{item.J},
+						#{item.K},
+						#{item.L},
+						#{item.M},
+						#{item.N},
+						#{item.O},
+						#{item.AA},
+						#{item.AB},
+						#{item.AC},
+						#{item.AD},
+						#{item.AE},
+						#{item.AF},
+						#{usercd},
+						SYSDATE
+					);
+			</foreach>
+		END
+		}
+	</insert>
+	
+	<insert id="setStoreOperationUpload" parameterType="java.util.HashMap">
+		{
+		CALL
+			DECLARE
+			BEGIN	
+			<foreach collection="excel" item="item">
+				MERGE INTO K7_STORE_OPERATION_OMS
+				USING DUAL ON (STO_CD = #{item.B})
+				WHEN MATCHED THEN 
+					UPDATE SET
+						ACC_HOLDER = #{item.F},
+						BANK_NM = #{item.G},
+						ACC_NUM = #{item.H},
+						MINIMUM_ORDER_PRICE = #{item.P},
+						MAXIMUM_ORDER_PRICE = #{item.Q},
+						ESTIMATED_DELIVERY_TIME = #{item.R},
+						DAY_START_TIME = #{item.opwd},
+						DAY_END_TIME = #{item.clwd},
+						WEEKEND_START_TIME = #{item.opwn},
+						WEEKEND_END_TIME = #{item.clwn},
+						HOLIDAY_START_TIME = #{item.ophd},
+						HOLIDAY_END_TIME = #{item.clhd},
+						DELIVERY_PRICE = #{item.S},
+						LOC_LAT = #{item.W},
+						LOC_LONG = #{item.X},
+						DELIVERY_CH_CD = #{item.Y}
+					WHEN NOT MATCHED THEN
+					INSERT (
+						STO_CD,
+						ACC_HOLDER,
+						BANK_NM,
+						ACC_NUM,
+						MINIMUM_ORDER_PRICE,
+						MAXIMUM_ORDER_PRICE,
+						ESTIMATED_DELIVERY_TIME,
+						DAY_START_TIME,
+						DAY_END_TIME,
+						WEEKEND_START_TIME,
+						WEEKEND_END_TIME,
+						HOLIDAY_START_TIME,
+						HOLIDAY_END_TIME,
+						DELIVERY_PRICE,
+						LOC_LAT,
+						LOC_LONG,
+						DELIVERY_CH_CD
+						)
+					VALUES
+						(
+							#{item.B},
+							#{item.F},
+							#{item.G},
+							#{item.H},
+							#{item.P},
+							#{item.Q},
+							#{item.R},
+							#{item.opwd},
+							#{item.clwd},
+							#{item.opwn},
+							#{item.clwn},
+							#{item.ophd},
+							#{item.clhd},
+							#{item.S},
+							#{item.W},
+							#{item.X},
+							#{item.Y}
+						);
+			</foreach>
+		END
+		}
+	</insert>
+	
+	<insert id="setStoreChannelUpload" parameterType="java.util.HashMap">
+		{
+		CALL
+			DECLARE
+				V_CH_CD VARCHAR(10);
+			BEGIN
+			<foreach collection="excel" item="item">
+				<foreach collection="item.Z" item="i">
+					SELECT CPN_CD INTO V_CH_CD FROM K7_COMPANY_MASTER_OMS WHERE K7_LINK_CD = #{i};
+					MERGE INTO K7_CHANNEL_STORE_OPERATION_OMS
+					USING DUAL ON (CH_CD = V_CH_CD AND STO_CD = #{item.B})
+					WHEN MATCHED THEN 
+					UPDATE SET
+						CH_STATE = 'Open',
+						CH_SEND_FLAG = 'A',
+						REG_USER_CD = #{usercd},
+						REG_DATE = SYSDATE
+					WHEN NOT MATCHED THEN
+					INSERT (
+							CH_CD,
+							STO_CD,
+							CH_STATE,
+							CH_SEND_FLAG,
+							REG_USER_CD,
+							REG_DATE
+						)
+					VALUES
+						(
+							V_CH_CD,
+							#{item.B},
+							'Open',
+							'A',
+							#{usercd},
+							SYSDATE
+						);
+				</foreach>
+			</foreach>
+		END
+		}
+	</insert>
+		
+	<insert id="setCompanyMaster_GDC">
+		MERGE INTO K7_COMPANY_MASTER_GDC A
+		USING (SELECT * FROM K7_COMPANY_MASTER_OMS WHERE IN_APP = 'Y' AND CPN_TYPE = 'Store') B ON (B.CPN_CD = A.CPN_CD)
+		WHEN MATCHED THEN 
+		UPDATE SET
+			A.CPN_BIZ_TYPE = B.CPN_BIZ_TYPE,
+			A.CPN_NM = B.CPN_NM,
+			A.CEO_NM = B.CEO_NM,
+			A.CPN_BIZ_NO = B.CPN_BIZ_NO,
+			A.CPN_TEL = B.CPN_TEL,
+			A.CPN_TYPE = B.CPN_TYPE,
+			A.MNG_NM = B.MNG_NM,
+			A.MNG_HPNO = B.MNG_HPNO,
+			A.FC_NM = B.FC_NM,
+			A.HPNO = B.HPNO,
+			A.EMAIL = B.EMAIL,
+			A.CPN_ADDR = B.CPN_ADDR,
+			A.CPN_STATE = B.CPN_STATE,
+			A.MEMO = B.MEMO,
+			A.CPN_DESC = B.CPN_DESC,
+			A.CPN_IMAGE_URL = B.CPN_IMAGE_URL,
+			A.OPN_DT = B.OPN_DT,
+			A.REG_USER_CD = B.REG_USER_CD,
+			A.REG_DATE = B.REG_DATE
+		WHEN NOT MATCHED THEN
+			INSERT (
+				A.CPN_CD,
+				A.CPN_TYPE,
+				A.CPN_BIZ_TYPE,
+				A.CPN_NM,
+				A.CEO_NM,
+				A.CPN_BIZ_NO,
+				A.CPN_TEL,
+				A.MNG_NM,
+				A.MNG_HPNO,
+				A.FC_NM,
+				A.HPNO,
+				A.EMAIL,
+				A.CPN_ADDR,
+				A.IN_APP,
+				A.CPN_STATE,
+				A.MEMO,
+				A.CPN_DESC,
+				A.CPN_IMAGE_URL,
+				A.OPN_DT,
+				A.REG_USER_CD,
+				A.REG_DATE
+			)
+		VALUES
+			(
+				B.CPN_CD,
+				B.CPN_TYPE,
+				B.CPN_BIZ_TYPE,
+				B.CPN_NM,
+				B.CEO_NM,
+				B.CPN_BIZ_NO,
+				B.CPN_TEL,
+				B.MNG_NM,
+				B.MNG_HPNO,
+				B.FC_NM,
+				B.HPNO,
+				B.EMAIL,
+				B.CPN_ADDR,
+				B.IN_APP,
+				B.CPN_STATE,
+				B.MEMO,
+				B.CPN_DESC,
+				B.CPN_IMAGE_URL,
+				B.OPN_DT,
+				B.REG_USER_CD,
+				B.REG_DATE
+		)
+	</insert>
+	
+	<insert id="setStoreOperation_GDC">
+		MERGE INTO K7_STORE_OPERATION_GDC A
+		USING (SELECT * FROM K7_STORE_OPERATION_OMS A INNER JOIN K7_COMPANY_MASTER_GDC B ON(B.CPN_CD = A.STO_CD)) B ON (B.CPN_CD = A.STO_CD)
+		WHEN MATCHED THEN 
+		UPDATE SET
+			A.LOC_LAT = B.LOC_LAT,
+			A.LOC_LONG = B.LOC_LONG,
+			A.DAY_START_TIME = B.DAY_START_TIME,
+			A.DAY_END_TIME = B.DAY_END_TIME,
+			A.DELIVERY_PRICE = B.DELIVERY_PRICE,
+			A.MAXIMUM_ORDER_PRICE = B.MAXIMUM_ORDER_PRICE,
+			A.MINIMUM_ORDER_PRICE = B.MINIMUM_ORDER_PRICE,
+			A.WEEKEND_START_TIME = B.WEEKEND_START_TIME,
+			A.WEEKEND_END_TIME = B.WEEKEND_END_TIME,
+			A.HOLIDAY_START_TIME = B.HOLIDAY_START_TIME,
+			A.HOLIDAY_END_TIME = B.HOLIDAY_END_TIME,
+			A.ESTIMATED_DELIVERY_TIME = B.ESTIMATED_DELIVERY_TIME,
+			A.DELIVERY_CH_CD = B.DELIVERY_CH_CD,
+			A.ACC_HOLDER = B.ACC_HOLDER,
+			A.BANK_NM = B.BANK_NM,
+			A.ACC_NUM = B.ACC_NUM,
+			A.STOP_START_DAY = B.STOP_START_DAY,
+			A.STOP_END_DAY = B.STOP_END_DAY,
+			A.BREAK_TIME = B.BREAK_TIME
+		WHEN NOT MATCHED THEN
+			INSERT (
+			A.STO_CD,
+			A.LOC_LAT,
+			A.LOC_LONG,
+			A.DAY_START_TIME,
+			A.DAY_END_TIME,
+			A.DELIVERY_PRICE,
+			A.MAXIMUM_ORDER_PRICE,
+			A.MINIMUM_ORDER_PRICE,
+			A.WEEKEND_START_TIME,
+			A.WEEKEND_END_TIME,
+			A.HOLIDAY_START_TIME,
+			A.HOLIDAY_END_TIME,
+			A.ESTIMATED_DELIVERY_TIME,
+			A.DELIVERY_CH_CD,
+			A.ACC_HOLDER,
+			A.BANK_NM,
+			A.ACC_NUM,
+			A.STOP_START_DAY,
+			A.STOP_END_DAY,
+			A.BREAK_TIME
+			)
+		VALUES
+			(
+			B.STO_CD,
+			B.LOC_LAT,
+			B.LOC_LONG,
+			B.DAY_START_TIME,
+			B.DAY_END_TIME,
+			B.DELIVERY_PRICE,
+			B.MAXIMUM_ORDER_PRICE,
+			B.MINIMUM_ORDER_PRICE,
+			B.WEEKEND_START_TIME,
+			B.WEEKEND_END_TIME,
+			B.HOLIDAY_START_TIME,
+			B.HOLIDAY_END_TIME,
+			B.ESTIMATED_DELIVERY_TIME,
+			B.DELIVERY_CH_CD,
+			B.ACC_HOLDER,
+			B.BANK_NM,
+			B.ACC_NUM,
+			B.STOP_START_DAY,
+			B.STOP_END_DAY,
+			B.BREAK_TIME
+		)
+	</insert>
+	
+	<insert id="setCategoryUpdate" parameterType="java.util.HashMap" >
+		{CALL
+	        DECLARE
+	        BEGIN
+			<foreach collection="menu" item="item" separator=";" close="; END }">
+				MERGE INTO K7_CATEGORY_MASTER_OMS 
+				USING DUAL ON (CTGR_NM = #{item.B}) 
+				WHEN NOT MATCHED THEN 
+				INSERT (
+					CTGR_CD, 
+					CTGR_NM, 
+					CTGR_TYPE, 
+					CTGR_LEVEL, 
+					SEQ, 
+					FIRST_CTGR, 
+					SECOND_CTGR, 
+					THIRD_CTGR, 
+					REG_USER_CD, 
+					REG_DATE
+				) 
+				VALUES(
+					(SELECT NVL(MAX(CTGR_CD)+1,1) FROM K7_CATEGORY_MASTER_OMS ),
+					TRIM(#{item.B}), 
+					'Menu',
+					1, 
+					#{item.A}, 
+					0,
+					0,
+					0,
+					#{usercd},
+					SYSDATE
+				)
+			</foreach>
+	</insert>
+	
+	<delete id="deleteAllMenu">
+		{
+			CALL
+			BEGIN	
+				DELETE FROM K7_MENU_MASTER_BACK;
+				DELETE FROM K7_MENU_OPTION_BACK;
+				DELETE FROM K7_OPTION_ITEM_BACK;
+				INSERT INTO K7_MENU_MASTER_BACK SELECT * FROM K7_MENU_MASTER_OMS;
+				INSERT INTO K7_MENU_OPTION_BACK SELECT * FROM K7_MENU_OPTION_OMS;
+				INSERT INTO K7_OPTION_ITEM_BACK SELECT * FROM K7_OPTION_ITEM_OMS;
+				DELETE FROM K7_MENU_MASTER_OMS WHERE MENU_CD NOT IN ('990257');
+				DELETE FROM K7_MENU_OPTION_OMS;
+				DELETE FROM K7_OPTION_ITEM_OMS;
+			END
+		}
+	</delete>
+	
+	<insert id="setMenuUpdate" parameterType="java.util.HashMap">
+		{
+		CALL
+			DECLARE
+				V_CTGR_CD		NUMBER;
+				V_OPTION_CD	VARCHAR2(32);
+				V_OPTION_ITEM_CD VARCHAR2(32);
+			BEGIN	
+				<foreach collection="menu" item="item">
+					SELECT CTGR_CD INTO V_CTGR_CD FROM K7_CATEGORY_MASTER_OMS WHERE CTGR_NM = #{item.B};
+					MERGE INTO  K7_MENU_MASTER_OMS
+					USING DUAL ON (MENU_CD = #{item.J})
+					WHEN MATCHED THEN UPDATE SET
+						CTGR_CD = V_CTGR_CD,
+						SEQUENCE = #{item.C},
+						MENU_NM = TRIM(#{item.D}),
+						PRICE = #{item.E},
+						MENU_STATE = #{item.F},
+						MENU_DESC = #{item.G},
+						IMAGE_URL = #{item.H},
+						NUTRITION_INFO_URL = #{item.I},
+						REG_USER_CD = #{usercd},
+						REG_DATE = SYSDATE 
+					WHEN NOT MATCHED THEN INSERT (
+						CTGR_CD,
+						SEQUENCE,
+						MENU_NM,
+						PRICE,
+						MENU_STATE,
+						MENU_DESC,
+						IMAGE_URL,
+						NUTRITION_INFO_URL,
+						MENU_CD,
+						REG_USER_CD,
+						REG_DATE
+					)
+					VALUES (
+						V_CTGR_CD,
+						#{item.C},
+						TRIM(#{item.D}),
+						#{item.E},
+						#{item.F},
+						#{item.G},
+						#{item.H},
+						#{item.I},
+						#{item.J},
+						#{usercd},
+						SYSDATE
+					);
+					<if test='item.K!=null and !item.K.equals("")'>
+						SELECT CONCAT(#{item.J}, LPAD(#{item.K}, 2, '0')) OPTION_CD INTO V_OPTION_CD FROM DUAL;
+						MERGE INTO  K7_MENU_OPTION_OMS
+						USING DUAL ON (SEQUENCE = #{item.K} AND MENU_CD = #{item.J})
+						WHEN MATCHED THEN UPDATE SET
+							OPTION_CD = V_OPTION_CD,
+							OPTION_NM = #{item.L},
+							IS_REQUIRED = #{item.M},
+							IS_MULTI_SELECTABLE = #{item.N},
+							IS_COUNTABLE = #{item.O},
+							MIN_SELECT_COUNT = #{item.P},
+							MAX_SELECT_COUNT = #{item.Q}
+						WHEN NOT MATCHED THEN INSERT (
+							OPTION_CD,
+							MENU_CD,
+							SEQUENCE,
+							OPTION_NM,
+							IS_REQUIRED,
+							IS_MULTI_SELECTABLE,
+							IS_COUNTABLE,
+							MIN_SELECT_COUNT,
+							MAX_SELECT_COUNT
+						) 
+						VALUES (
+							V_OPTION_CD,
+							#{item.J},
+							#{item.K},
+							#{item.L},
+							#{item.M},
+							#{item.N},
+							#{item.O},
+							#{item.P},			
+							#{item.Q}
+						);
+						SELECT CONCAT(V_OPTION_CD, LPAD(#{item.R}, 2, '0')) OPTION_ITEM_CD INTO V_OPTION_ITEM_CD FROM DUAL;
+						INSERT INTO K7_OPTION_ITEM_OMS (
+							SEQUENCE,
+							ITEM_NM,
+							PRICE,
+							ITEM_CD,
+							OPTION_ITEM_CD,
+							OPTION_CD,
+							MENU_CD
+							)
+						VALUES (
+							#{item.R},
+							TRIM(#{item.S}),
+							#{item.T},
+							#{item.U},
+							V_OPTION_ITEM_CD,
+							V_OPTION_CD,		
+							#{item.J}
+						);
+				</if>
+			</foreach>
+			END
+		}
+	</insert>
+	
+	<insert id="setMenuUpdate_GDC" parameterType="java.util.HashMap">
+		{
+			CALL
+			BEGIN
+				DELETE FROM K7_CATEGORY_MASTER_GDC;
+				DELETE FROM K7_MENU_MASTER_GDC;
+				DELETE FROM K7_MENU_OPTION_GDC;
+				DELETE FROM K7_OPTION_ITEM_GDC;
+				INSERT INTO K7_CATEGORY_MASTER_GDC SELECT * FROM K7_CATEGORY_MASTER_OMS;
+				INSERT INTO K7_MENU_MASTER_GDC SELECT * FROM K7_MENU_MASTER_OMS;
+				INSERT INTO K7_MENU_OPTION_GDC SELECT * FROM K7_MENU_OPTION_OMS;
+				INSERT INTO K7_OPTION_ITEM_GDC SELECT * FROM K7_OPTION_ITEM_OMS;
+			END
+		}
+	</insert>
+	
+	<insert id="setMenuPartUpdate" parameterType="java.util.HashMap">
+		{
+		CALL
+			DECLARE
+				V_CTGR_CD		NUMBER;
+				V_OPTION_CD		VARCHAR2(32);
+				V_OPTION_ITEM_CD VARCHAR2(32);
+			BEGIN	
+				<foreach collection="menu" item="item">
+					SELECT CTGR_CD INTO V_CTGR_CD FROM K7_CATEGORY_MASTER_OMS WHERE CTGR_NM = #{item.B};
+					MERGE INTO  K7_MENU_MASTER_OMS
+					USING DUAL ON (MENU_CD = #{item.J})
+					WHEN MATCHED THEN UPDATE SET
+						CTGR_CD = V_CTGR_CD,
+						SEQUENCE = #{item.C},
+						MENU_NM = TRIM(#{item.D}),
+						PRICE = #{item.E},
+						MENU_STATE = #{item.F},
+						MENU_DESC = #{item.G},
+						IMAGE_URL = #{item.H},
+						NUTRITION_INFO_URL = #{item.I},
+						REG_USER_CD = #{usercd},
+						REG_DATE = SYSDATE
+					WHEN NOT MATCHED THEN INSERT (
+						CTGR_CD,
+						SEQUENCE,
+						MENU_NM,
+						PRICE,
+						MENU_STATE,
+						MENU_DESC,
+						IMAGE_URL,
+						NUTRITION_INFO_URL,
+						MENU_CD,
+						REG_USER_CD,
+						REG_DATE
+					)
+					VALUES (
+						V_CTGR_CD,
+						#{item.C},
+						TRIM(#{item.D}),
+						#{item.E},
+						#{item.F},
+						#{item.G},
+						#{item.H},
+						#{item.I},
+						#{item.J},
+						#{usercd},
+						SYSDATE
+					);
+					<if test='item.K!=null and !item.K.equals("")'>
+						SELECT CONCAT(#{item.J}, LPAD(#{item.K}, 2, '0')) OPTION_CD INTO V_OPTION_CD FROM DUAL;
+						MERGE INTO  K7_MENU_OPTION_OMS
+						USING DUAL ON (SEQUENCE = #{item.K} AND MENU_CD = #{item.J}) 
+						WHEN MATCHED THEN UPDATE SET
+							OPTION_CD = V_OPTION_CD,
+							OPTION_NM = #{item.L},
+							IS_REQUIRED = #{item.M},
+							IS_MULTI_SELECTABLE = #{item.N},
+							IS_COUNTABLE = #{item.O},
+							MIN_SELECT_COUNT = #{item.P},
+							MAX_SELECT_COUNT = #{item.Q}
+						WHEN NOT MATCHED THEN INSERT (
+							OPTION_CD,
+							MENU_CD,
+							SEQUENCE,
+							OPTION_NM,
+							IS_REQUIRED,
+							IS_MULTI_SELECTABLE,
+							IS_COUNTABLE,
+							MIN_SELECT_COUNT,
+							MAX_SELECT_COUNT
+						) 
+						VALUES (
+							V_OPTION_CD,
+							#{item.J},
+							#{item.K},
+							#{item.L},
+							#{item.M},
+							#{item.N},
+							#{item.O},
+							#{item.P},			
+							#{item.Q}
+						);
+						SELECT CONCAT(V_OPTION_CD, LPAD(#{item.R}, 2, '0')) OPTION_ITEM_CD INTO V_OPTION_ITEM_CD FROM DUAL;
+						MERGE INTO K7_OPTION_ITEM_OMS
+						USING DUAL ON (SEQUENCE = #{item.R} AND OPTION_CD = V_OPTION_CD)
+						WHEN MATCHED THEN UPDATE SET
+							ITEM_NM = TRIM(#{item.S}),
+							PRICE = #{item.T},
+							ITEM_CD = #{item.U},
+							OPTION_ITEM_CD = V_OPTION_ITEM_CD,
+							MENU_CD = #{item.J}
+						WHEN NOT MATCHED THEN INSERT (
+							SEQUENCE,
+							ITEM_NM,
+							PRICE,
+							ITEM_CD,
+							OPTION_ITEM_CD,
+							OPTION_CD,
+							MENU_CD
+							)
+						VALUES (
+							#{item.R},
+							TRIM(#{item.S}),
+							#{item.T},
+							#{item.U},
+							V_OPTION_ITEM_CD,
+							V_OPTION_CD,		
+							#{item.J}
+						);
+				</if>
+			</foreach>
+			END
+		}
+	</insert>
+	
+	<insert id="setCategoryUpdate_GDC" parameterType="java.util.HashMap" >
+		{CALL
+	        DECLARE
+	        BEGIN
+			<foreach collection="menu" item="item" separator=";" close="; END }">
+				MERGE INTO K7_CATEGORY_MASTER_GDC 
+				USING DUAL ON (CTGR_NM = #{item.B}) 
+				WHEN NOT MATCHED THEN INSERT
+					(
+					CTGR_CD, 
+					CTGR_NM, 
+					CTGR_TYPE, 
+					CTGR_LEVEL, 
+					SEQ, 
+					FIRST_CTGR, 
+					SECOND_CTGR, 
+					THIRD_CTGR, 
+					REG_USER_CD, 
+					REG_DATE
+				) 
+				VALUES(
+					(SELECT NVL(MAX(CTGR_CD)+1,1) FROM K7_CATEGORY_MASTER_GDC ),
+					TRIM(#{item.B}), 
+					'Menu',
+					1, 
+					#{item.A}, 
+					0,
+					0,
+					0,
+					#{usercd},
+					SYSDATE
+				)
+			</foreach>
+	</insert>
+	
+	
+	<insert id="setMenuPartUpdate_GDC" parameterType="java.util.HashMap">
+		{
+		CALL
+			DECLARE
+				V_CTGR_CD		NUMBER;
+				V_OPTION_CD	VARCHAR2(32);
+				V_OPTION_ITEM_CD VARCHAR2(32);
+			BEGIN	
+				<foreach collection="menu" item="item">
+					SELECT CTGR_CD INTO V_CTGR_CD FROM K7_CATEGORY_MASTER_GDC WHERE CTGR_NM = #{item.B};
+					MERGE INTO  K7_MENU_MASTER_GDC
+					USING DUAL ON (MENU_CD = #{item.J}) 
+					WHEN MATCHED THEN UPDATE SET
+						CTGR_CD = V_CTGR_CD,
+						SEQUENCE = #{item.C},
+						MENU_NM = TRIM(#{item.D}),
+						PRICE = #{item.E},
+						MENU_STATE = #{item.F},
+						MENU_DESC = #{item.G},
+						IMAGE_URL = #{item.H},
+						NUTRITION_INFO_URL = #{item.I},
+						REG_USER_CD = #{usercd},
+						REG_DATE = SYSDATE
+					WHEN NOT MATCHED THEN INSERT (
+						CTGR_CD,
+						SEQUENCE,
+						MENU_NM,
+						PRICE,
+						MENU_STATE,
+						MENU_DESC,
+						IMAGE_URL,
+						NUTRITION_INFO_URL,
+						MENU_CD,
+						REG_USER_CD,
+						REG_DATE
+					)
+					VALUES (
+						V_CTGR_CD,
+						#{item.C},
+						TRIM(#{item.D}),
+						#{item.E},
+						#{item.F},
+						#{item.G},
+						#{item.H},
+						#{item.I},
+						#{item.J},
+						#{usercd},
+						SYSDATE
+					);
+					<if test='item.K!=null and !item.K.equals("")'>
+						SELECT CONCAT(#{item.J}, LPAD(#{item.K}, 2, '0')) OPTION_CD INTO V_OPTION_CD FROM DUAL;
+						MERGE INTO  K7_MENU_OPTION_GDC
+						USING DUAL ON (SEQUENCE = #{item.K} AND MENU_CD = #{item.J})
+						WHEN MATCHED THEN UPDATE SET
+							OPTION_CD = V_OPTION_CD,
+							OPTION_NM = #{item.L},
+							IS_REQUIRED = #{item.M},
+							IS_MULTI_SELECTABLE = #{item.N},
+							IS_COUNTABLE = #{item.O},
+							MIN_SELECT_COUNT = #{item.P},
+							MAX_SELECT_COUNT = #{item.Q} 
+						WHEN NOT MATCHED THEN INSERT (
+							OPTION_CD,
+							MENU_CD,
+							SEQUENCE,
+							OPTION_NM,
+							IS_REQUIRED,
+							IS_MULTI_SELECTABLE,
+							IS_COUNTABLE,
+							MIN_SELECT_COUNT,
+							MAX_SELECT_COUNT
+						) 
+						VALUES (
+							V_OPTION_CD,
+							#{item.J},
+							#{item.K},
+							#{item.L},
+							#{item.M},
+							#{item.N},
+							#{item.O},
+							#{item.P},			
+							#{item.Q}
+						);
+						SELECT CONCAT(V_OPTION_CD, LPAD(#{item.R}, 2, '0')) OPTION_ITEM_CD INTO V_OPTION_ITEM_CD FROM DUAL;
+						MERGE INTO K7_OPTION_ITEM_GDC
+						USING DUAL ON (SEQUENCE = #{item.R} AND OPTION_CD = V_OPTION_CD) 
+						WHEN MATCHED THEN UPDATE SET
+							ITEM_NM = TRIM(#{item.S}),
+							PRICE = #{item.T},
+							ITEM_CD = #{item.U},
+							OPTION_ITEM_CD = V_OPTION_ITEM_CD,
+							MENU_CD = #{item.J}
+						WHEN NOT MATCHED THEN INSERT (
+							SEQUENCE,
+							ITEM_NM,
+							PRICE,
+							ITEM_CD,
+							OPTION_ITEM_CD,
+							OPTION_CD,
+							MENU_CD
+							)
+						VALUES (
+							#{item.R},
+							TRIM(#{item.S}),
+							#{item.T},
+							#{item.U},
+							V_OPTION_ITEM_CD,
+							V_OPTION_CD,		
+							#{item.J}
+						);
+				</if>
+			</foreach>
+			END
+		}
+	</insert>
+</mapper>

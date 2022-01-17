@@ -1,0 +1,166 @@
+/*####################### 메인 페이지 #########################*/
+.main_div {
+    padding: 25px;
+    border: 1px solid #C3C3C3;
+    border-top: 0;
+    background-color: white;
+    overflow: auto;
+    height: calc(100vh - 159px);
+}
+
+/*################ 테이블 DIV 부분 ################*/
+form {
+	display: inline;
+}
+
+.btn_search{
+	float: right;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    word-break: break-all;
+    overflow-x: auto;
+    white-space: nowrap;
+    border: 1px solid #C3C3C3;
+}
+
+table input {
+	color: #717171;
+	width: 100%;
+	padding: 0;
+}
+
+th {
+    background-color: #F4F4F4;
+    border: 1px solid #C3C3C3;
+    font-weight: bold;
+    color: #717171;
+    padding: 5px;
+    text-align: center;
+    height: 36px;
+}
+
+.mtitle {
+    font-size: medium;
+    font-size: 0.8rem;
+    text-align: left;
+    padding: 10px;
+    padding-left: 25px;
+}
+
+.stitle {
+    background-color: white;
+    padding: 5px 15px;
+    border: 1px solid #C3C3C3;
+    height: 36px;
+}
+
+table td {
+    color: #717171;
+    border: 1px solid #C3C3C3;
+    font-size: 14px;
+    height: 36px;
+    font-size:0.8rem;
+    padding: 0 10 0 10px;
+}
+
+.pd_des {
+    background-color: white;
+    padding: 10px;
+}
+
+.inItem {
+    width: 1px;
+    background-color: #099769;
+    border: 1px solid #099769;
+    padding: 0px;
+}
+
+.itemTd{
+	  background-color: #F4F4F4;
+	  border: 1px solid #C3C3C3;
+	  color: #717171;
+	  padding: 5px;
+	  text-align: center;
+	  height: 36px;
+}
+
+.tdTextAr {
+	resize: none;
+	width: 100%;
+	height: 100%;
+	border: none;
+    outline: none;
+    font-size:0.8rem;
+    color: #717171;
+}
+
+#OPTION_CD{
+	color: #099769;
+	font-weight: bold;
+}
+
+/* ####################   테이블 수정 css #####################*/
+.tdInput {
+    height: 25px;
+    border: none;
+    outline: none;
+}
+
+.itemTd input {
+	background-color: #F4F4F4;
+}
+
+.row:hover, .input_hover {
+	background-color: #e0e0e0;
+	cursor: pointer;
+}
+
+#cancel_button, #save_button{
+	display: none;
+}
+
+.writeonly{
+	border: 1px solid #099769;
+}
+
+.edit{
+	pointer-events: none;
+}
+
+.editCompleted{
+	background-color: skyblue;
+}
+
+.select_box {
+    border: none;
+    width: 150px;
+    height: 80%;
+    font-family: inherit;
+    /* 폰트 상속 */
+    font-size: 0.8rem;
+    color: #717171;
+}
+
+.select_box:disabled{
+	color: #717171;
+	opacity: initial;
+	appearance: none;
+}
+
+.edit_sbox{
+	cursor: pointer;
+	border: 1.5px solid #C3C3C3;
+}
+
+.uneditable{
+	color: #A30000;
+	font-weight: bold;
+	pointer-events: none;
+}
+
+.defTb{
+	border: 2px solid #A30000;
+}

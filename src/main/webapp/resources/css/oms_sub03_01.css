@@ -1,0 +1,134 @@
+.btn_excel{
+	margin: 6px 7px;
+}
+
+ .main_div {
+     padding: 25px;
+     border: 1px solid #C3C3C3;
+     border-top: 0;
+     background-color: white;
+     overflow: auto;
+     height: calc(100vh - 255px);
+ }
+
+.search_div > p {
+    color: #717171;
+    font-size: 13px;
+    font-weight: bold;
+    display: inline-block;
+    padding: 12 10px;
+}
+
+.search_form {
+     border: 1px solid #C3C3C3;
+     width: 150px;
+     height: 30px;
+     display: inline-block;
+     border-radius: 1px;
+     margin-right: 10px;
+ }
+ 
+ .search_form2 {
+     border: 1px solid #C3C3C3;
+     width: 180px;
+     height: 30px;
+     display: inline-block;
+     border-radius: 1px;
+     margin-right: 10px;
+ }
+
+ .search_form > img {
+     width: auto;
+     vertical-align: middle;
+     cursor: pointer;
+ }
+
+ .search_box {
+     margin-right: 10px;
+     width: 120px;
+     height: 30px;
+     display: inline-block;
+     border: 0px;
+ }
+ 
+ .dateType1, .dateType3{
+	border: 1px solid #C3C3C3;
+    border-radius: 1px;
+    margin: 0px;
+	background-color: #FFF;
+	color: #717171;
+	width: 50px;
+	height: 33px;
+	display: inline-block;
+	padding: 5px;
+	cursor: pointer;
+}
+ .dateType2{
+	border: 1px solid #C3C3C3;
+	border-right: 0;
+	border-left: 0;
+    border-radius: 1px;
+    background-color: #FFF;
+	color: #717171;
+	width: 50px;
+	height: 33px;
+	display: inline-block;
+	padding: 5px;
+	cursor: pointer;
+}
+
+.dateType3{
+	margin-right: 22px;
+}
+
+/* .active_button {
+     color: #099769;
+     border: 2px solid #099769;
+     display: inline-block;
+     font-weight: bolder;
+ } */
+
+ .button_date:hover {
+     cursor: pointer;
+ }
+
+ .input_date {
+     margin: 0px 6px;
+     padding-left: 5px;
+     border: 2px solid #099769;
+     border-radius: 1px;
+     width: 100px;
+     height: 33px;
+     display: inline-block;
+     color: #717171;
+     text-align: left;
+     cursor: pointer;
+ }
+
+ .input_date:focus {
+     outline: none;
+ }
+
+ .search_first_div {
+     display: inline-block;
+ }
+
+ option {
+     font-size: 12px;
+     float: none;
+     color: #717171;
+     font-weight: bold;
+     float: left;
+ }
+ 
+ th, td{
+	white-space: nowrap;
+}
+
+#ono{
+	width: 170px;
+}
+
+#chono{
+	width: 170px;
+}

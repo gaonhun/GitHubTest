@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd" >
+<configuration>
+	<!-- 마이바티스의 동작을 제어하는 설정 태그 = <Settings> -->
+	<!-- properties 밑에, typeAliases 위에 위치해야한다 -->
+	<settings>
+		<setting name="jdbcTypeForNull" value="NULL"/>
+	</settings>
+	<typeAliases>
+		<typeAlias type="gaon.oms.project.model.dto.K7_USER_ACCOUNT_OMS" alias="K7_USER_ACCOUNT_OMS" />
+		<typeAlias type="gaon.oms.project.model.dto.K7_ORDER_HEADER_OMS" alias="K7_ORDER_HEADER_OMS" />
+		<typeAlias type="gaon.oms.project.model.dto.K7_MENU_MASTER_OMS" alias="K7_MENU_MASTER_OMS" />
+		<typeAlias type="gaon.oms.project.model.dto.K7_COMPANY_MASTER_OMS" alias="K7_COMPANY_MASTER_OMS" />
+		<typeAlias type="gaon.oms.project.model.dto.K7_REFERENCE_CODE_OMS" alias="K7_REFERENCE_CODE_OMS" />
+		<typeAlias type="gaon.oms.project.model.dto.K7_CATEGORY_MASTER_OMS" alias="K7_CATEGORY_MASTER_OMS" />
+		<typeAlias type="gaon.oms.project.model.dto.K7_USER_AUTH_OMS" alias="K7_USER_AUTH_OMS" />
+		
+		<!-- ##########################################Detail 0101########################################## -->
+		<typeAlias type="gaon.oms.project.model.dto.K7_STORE_OPERATION_OMS" alias="K7_STORE_OPERATION_OMS" />
+		<typeAlias type="gaon.oms.project.model.dto.K7_CHANNEL_STORE_OPERATION_OMS" alias="K7_CHANNEL_STORE_OPERATION_OMS" />
+		
+		<!-- ##########################################Detail 0201########################################## -->
+		<typeAlias type="gaon.oms.project.model.dto.K7_MENU_MASTER_OMS" alias="K7_MENU_MASTER_OMS" />
+		<typeAlias type="gaon.oms.project.model.dto.K7_MENU_OPTION_OMS" alias="K7_MENU_OPTION_OMS" />
+		<typeAlias type="gaon.oms.project.model.dto.K7_OPTION_ITEM_OMS" alias="K7_OPTION_ITEM_OMS" />
+		<typeAlias type="gaon.oms.project.model.dto.K7_STORE_MENU_OMS" alias="K7_STORE_MENU_OMS" />
+		
+		<!-- ##########################################Detail 0301########################################## -->
+		<typeAlias type="gaon.oms.project.model.dto.K7_ORDER_HISTORY_OMS" alias="K7_ORDER_HISTORY_OMS" />
+		<typeAlias type="gaon.oms.project.model.dto.K7_ORDER_MENU_OMS" alias="K7_ORDER_MENU_OMS" />
+		<typeAlias type="gaon.oms.project.model.dto.K7_ORDER_OPTION_ITEM_OMS" alias="K7_ORDER_OPTION_ITEM_OMS" />
+
+		<!-- ##########################################PAGING##########################################	-->
+		<typeAlias type="gaon.oms.project.model.dto.Criteria" alias="Criteria" />
+	</typeAliases>
+</configuration>
