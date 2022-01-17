@@ -30,7 +30,10 @@ public class test_json {
 		System.out.println(arr.get(0));
 		System.out.println(arr.get(1));
 
-*/
+*/     
+		
+		
+		
 		JSONParser parser = new JSONParser();
 		String jsonString = "{\"stat\":{\"sdr\": \"aaaaaaaaaaaaaaaaaaaaa\",\"rcv\": \"bbbbbbbbbbbbbbbbbbbb\",\"time\": \"UTC in millis\"" + ",\"type\": 1,\"subt\": 1,\"argv\": [{\"1\":2},{\"2\":3}]},\"sstat\":\"1\"}"; 
 		try { 
